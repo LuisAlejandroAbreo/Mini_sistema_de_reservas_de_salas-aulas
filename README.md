@@ -35,6 +35,8 @@ Este proyecto implementa un **mini sistema funcional**, por lo que se establecen
 - **No existe autenticación ni sistema de usuarios**
 - La identificación del responsable de la reserva se realiza mediante un **nombre, grupo o curso**
 
+El proposito del proyecto es realizar un producto minumo viable (MVP) al finalizar el primer sprint.
+
 ---
 
 ## Funcionalidades Principales
