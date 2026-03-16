@@ -6,7 +6,8 @@
 * **Fecha de finalización:** 15 de marzo 2026, 8:15 PM
 * **Duración:** 15 Minutos
 * **Equipo:** Scrum Master (Luis), Development Team (Sebastian)
-
+* **Notas:** El desarrollador Andres no estuvo presente en el Sprint Daily
+ 
 ---
 
 ## Evaluación del Daily
@@ -18,10 +19,12 @@
 
 ## Scrum Table Progress
 
-| DEV | To Do | In Progress | Done |
-| :--- | :--- | :--- | :--- |
-| Sebastian | _**✓**_ | _**✓**_ | Crear consulta a base de datos |
-| Sebastian | _**✓**_ | Diseñar interfaz de visualización |
-| Sebastian | Listado de salas registradas | |  |
-| Sebastian | Mostrar nombre o código de sala |  |  |
-| Sebastian | Pruebas de carga al iniciar sistema |  |  |
+| DEV | To Do | In Progress | In Review | Done |
+| :--- | :--- | :--- | :--- |:--- |
+| Sebastian | _**✓**_ | _**✓**_ | Crear consulta a base de datos | |
+| Sebastian | _**✓**_ | Diseñar interfaz de visualización | | 
+| Sebastian | Listado de salas registradas | | | | 
+| Sebastian | Mostrar nombre o código de sala | | | |
+| Sebastian | Pruebas de carga al iniciar sistema | | | |
+ --- 
+![alt text](<Captura desde 2026-03-16 15-29-23.png>)
