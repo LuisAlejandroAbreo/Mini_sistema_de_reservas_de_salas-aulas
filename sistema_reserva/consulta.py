@@ -73,3 +73,56 @@ def inicializar_base_de_datos():
 
     conn.commit()
     conn.close()
+# ── CONSULTA 1: Todas las salas ──────────────────────────────
+def obtener_todas_las_salas():
+    """Retorna la lista completa de salas registradas."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM salas ORDER BY id")
+    filas  = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+# ── CONSULTA 2: Sala por código ──────────────────────────────
+def obtener_sala_por_codigo(codigo: str):
+    """Retorna una sala dado su código exacto (insensible a mayúsculas)."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM salas WHERE LOWER(codigo) = LOWER(?)", (codigo,)
+    )
+    fila = cursor.fetchone()
+    conn.close()
+    if fila is None:
+        raise ValueError(f"No se encontró ninguna sala con el código: {codigo}")
+    return dict(fila)
+
+
+# ── CONSULTA 3: Salas disponibles ────────────────────────────
+def obtener_salas_disponibles():
+    """Retorna solo las salas con disponible = 1."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM salas WHERE disponible = 1 ORDER BY id")
+    filas  = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+# ── CONSULTA 4: Búsqueda libre (nombre o código) ─────────────
+def buscar_salas(termino: str):
+    """Busca salas cuyo nombre O código contenga el término dado."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    like   = f"%{termino.lower()}%"
+    cursor.execute(
+        """SELECT * FROM salas
+           WHERE LOWER(nombre) LIKE ?
+              OR LOWER(codigo) LIKE ?
+           ORDER BY id""",
+        (like, like)
+    )
+    filas = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas 
