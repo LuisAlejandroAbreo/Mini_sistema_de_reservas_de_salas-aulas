@@ -38,10 +38,10 @@
 ### HU2 – Consultar historial de reserva
 | Tarea | Responsable | Estado |
 | :--- | :--- | :--- |
-| Crear consulta en base de datos | Dev. (Andrés) | To Do |
-| Diseñar interfaz de visualización | Dev. (Andrés) | To Do |
-| Crear función para obtener reservas por fecha | Dev. (Andrés) | To Do |
-| Diseñar selector de fecha | Dev. (Andrés) | To Do |
-| Ordenar reservas por hora de inicio | Dev. (Andrés) | To Do |
-| Mostrar lista de reservas | Dev. (Andrés) | To Do |
-| Mostrar información de cada reserva | Dev. (Andrés) | To Do |
+| Crear consulta en base de datos | Dev. (Jesus) | To Do |
+| Diseñar interfaz de visualización | Dev. (Jesus) | To Do |
+| Crear función para obtener reservas por fecha | Dev. (Jesus) | To Do |
+| Diseñar selector de fecha | Dev. (Jesus) | To Do |
+| Ordenar reservas por hora de inicio | Dev. (Jesus) | To Do |
+| Mostrar lista de reservas | Dev. (Jesus) | To Do |
+| Mostrar información de cada reserva | Dev. (Jesus) | To Do |
