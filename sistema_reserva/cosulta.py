@@ -51,3 +51,35 @@ def mostrar_nombre_por_codigo(codigo: str):
     except ValueError as e:
         print(f"\n❌ {e}\n")
         return None
+# ── Formatear info de una sala para mostrar en la UI ─────────
+def formatear_info_sala(sala: dict) -> dict:
+    """Devuelve un dict listo para mostrar en etiquetas Tkinter."""
+    return {
+        "encabezado": f"{sala['nombre']}   [{sala['codigo']}]",
+        "tipo":       sala["tipo"].capitalize(),
+        "estado":     "✅ Disponible" if sala["disponible"] else "🔴 Ocupada",
+    }
+
+
+# ── Buscar y mostrar coincidencias ────────────────────────────
+def buscar_y_mostrar(termino: str):
+    """Busca salas por nombre o código e imprime los resultados."""
+    resultados = buscar_salas(termino)
+
+    if not resultados:
+        print(f'⚠️  No se encontraron salas con: "{termino}"')
+        return []
+
+    print(f'\n🔍 Resultados para: "{termino}" ({len(resultados)} encontradas)\n')
+    for s in resultados:
+        estado = "✅" if s["disponible"] else "🔴"
+        print(f"  {estado}  {s['nombre']:<32}  Código: {s['codigo']}")
+    print()
+    return resultados
+
+
+# ── Demo al ejecutar directamente ────────────────────────────
+if __name__ == "__main__":
+    mostrar_listado_nombres_codigos()
+    mostrar_nombre_por_codigo("LAB01")
+    buscar_y_mostrar("sala")
