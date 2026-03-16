@@ -313,4 +313,301 @@ class VentanaPrincipal(tk.Tk):
             row.bind("<Leave>",
                      lambda e, r=row, a=acento:
                      (r.config(bg=C["bg_sidebar"]), a.config(bg=C["bg_sidebar"])))
- 
+    # ════════════════════════════════════════════════════════
+    #  HEADER SUPERIOR
+    # ════════════════════════════════════════════════════════
+    def _construir_header(self, parent):
+        hdr = tk.Frame(parent, bg=C["bg_header"], height=64)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        # Línea divisoria inferior
+        tk.Frame(parent, bg=C["border"], height=1).pack(fill="x")
+
+        # Breadcrumb izquierda
+        bc = tk.Frame(hdr, bg=C["bg_header"])
+        bc.pack(side="left", padx=32, fill="y")
+        tk.Label(
+            bc, text="Inicio  ›  ", font=F_SMALL,
+            bg=C["bg_header"], fg=C["text_3"]
+        ).pack(side="left")
+        tk.Label(
+            bc, text="Salas", font=("Segoe UI", 9, "bold"),
+            bg=C["bg_header"], fg=C["primary"]
+        ).pack(side="left")
+
+        # Botones de acción derecha
+        ac = tk.Frame(hdr, bg=C["bg_header"])
+        ac.pack(side="right", padx=28)
+
+        # Botón Nueva Sala
+        btn_nueva = tk.Label(
+            ac, text="   ＋  Nueva Sala   ",
+            font=("Segoe UI", 9, "bold"),
+            bg=C["primary"], fg="white",
+            cursor="hand2", pady=9
+        )
+        btn_nueva.pack(side="right", padx=(10, 0))
+        btn_nueva.bind("<Enter>", lambda e: btn_nueva.config(bg=C["primary_dark"]))
+        btn_nueva.bind("<Leave>", lambda e: btn_nueva.config(bg=C["primary"]))
+        Tooltip(btn_nueva, "Agregar una nueva sala al sistema")
+
+        # Botón Exportar
+        btn_exp = tk.Label(
+            ac, text="   ↓  Exportar   ",
+            font=F_SMALL, bg=C["bg_content"], fg=C["text_2"],
+            cursor="hand2", pady=9,
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        btn_exp.pack(side="right")
+        btn_exp.bind("<Enter>", lambda e: btn_exp.config(bg=C["border"]))
+        btn_exp.bind("<Leave>", lambda e: btn_exp.config(bg=C["bg_content"]))
+        Tooltip(btn_exp, "Exportar listado de salas a archivo")
+
+    # ════════════════════════════════════════════════════════
+    #  CUERPO PRINCIPAL
+    # ════════════════════════════════════════════════════════
+    def _construir_cuerpo(self, parent):
+        pad = tk.Frame(parent, bg=C["bg_content"])
+        pad.pack(fill="both", expand=True, padx=32, pady=28)
+
+        # Título de sección
+        self._construir_titulo(pad)
+
+        # Tarjetas KPI
+        self.frame_kpi = tk.Frame(pad, bg=C["bg_content"])
+        self.frame_kpi.pack(fill="x", pady=(20, 22))
+        self._construir_kpis()
+
+        # Barra de búsqueda y filtros
+        self._construir_toolbar(pad)
+
+        # Tabla + panel de detalle (lado a lado)
+        contenedor = tk.Frame(pad, bg=C["bg_content"])
+        contenedor.pack(fill="both", expand=True, pady=(14, 0))
+        self._construir_tabla(contenedor)
+        self._construir_panel_detalle(contenedor)
+
+        # Carga inicial de datos
+        self._cargar_salas(obtener_todas_las_salas())
+
+    # ── Título ────────────────────────────────────────────────
+    def _construir_titulo(self, parent):
+        fila = tk.Frame(parent, bg=C["bg_content"])
+        fila.pack(fill="x")
+        tk.Label(
+            fila, text="Listado de Salas Registradas",
+            font=F_DISPLAY, bg=C["bg_content"], fg=C["text_1"]
+        ).pack(anchor="w")
+        tk.Label(
+            fila,
+            text="Gestiona, consulta y administra las salas del sistema educativo",
+            font=F_BODY, bg=C["bg_content"], fg=C["text_2"]
+        ).pack(anchor="w", pady=(3, 0))
+
+    # ════════════════════════════════════════════════════════
+    #  TARJETAS KPI
+    # ════════════════════════════════════════════════════════
+    def _construir_kpis(self):
+        """Construye (o reconstruye) las 4 tarjetas de estadísticas."""
+        for w in self.frame_kpi.winfo_children():
+            w.destroy()
+
+        stats = obtener_estadisticas()
+        total = max(stats["total"], 1)
+        pct   = int(stats["disponibles"] / total * 100)
+
+        definiciones = [
+            ("Total Salas",    str(stats["total"]),       "🏢", C["primary"], C["primary_glow"]),
+            ("Disponibles",    str(stats["disponibles"]), "✅", C["green"],   C["green_bg"]),
+            ("Ocupadas",       str(stats["ocupadas"]),    "🔴", C["red"],     C["red_bg"]),
+            ("Disponibilidad", f"{pct}%",                 "📊", C["amber"],   C["amber_bg"]),
+        ]
+
+        for titulo, valor, ico, color, ico_bg in definiciones:
+            # Marco exterior de tarjeta
+            card = tk.Frame(
+                self.frame_kpi, bg=C["bg_card"],
+                highlightbackground=C["border"],
+                highlightthickness=1
+            )
+            card.pack(side="left", fill="both", expand=True, padx=(0, 14))
+
+            inner = tk.Frame(card, bg=C["bg_card"], padx=20, pady=18)
+            inner.pack(fill="both", expand=True)
+
+            # Fila superior: número grande + ícono con fondo
+            top = tk.Frame(inner, bg=C["bg_card"])
+            top.pack(fill="x")
+
+            # Ícono (cuadrado con fondo de color)
+            ib = tk.Frame(top, bg=ico_bg, width=50, height=50)
+            ib.pack_propagate(False)
+            ib.pack(side="right")
+            tk.Label(ib, text=ico, font=("Segoe UI", 20), bg=ico_bg).pack(expand=True)
+
+            # Número KPI
+            tk.Label(
+                top, text=valor, font=F_KPI,
+                bg=C["bg_card"], fg=color
+            ).pack(side="left", anchor="w")
+
+            # Etiqueta descriptiva
+            tk.Label(
+                inner, text=titulo, font=F_BODY,
+                bg=C["bg_card"], fg=C["text_2"]
+            ).pack(anchor="w", pady=(8, 0))
+
+            # Barra de acento inferior (3px)
+            tk.Frame(card, bg=color, height=3).pack(fill="x", side="bottom")
+
+    # ════════════════════════════════════════════════════════
+    #  TOOLBAR — búsqueda + filtros
+    # ════════════════════════════════════════════════════════
+    def _construir_toolbar(self, parent):
+        bar = tk.Frame(parent, bg=C["bg_content"])
+        bar.pack(fill="x")
+
+        # ── Campo de búsqueda ──────────────────────────────
+        search_wrap = tk.Frame(
+            bar, bg=C["bg_card"],
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        search_wrap.pack(side="left", fill="x", expand=True, padx=(0, 12))
+
+        tk.Label(
+            search_wrap, text="🔍", font=("Segoe UI", 11),
+            bg=C["bg_card"], fg=C["text_3"], padx=10
+        ).pack(side="left")
+
+        self.var_busqueda = tk.StringVar()
+        self.entry = tk.Entry(
+            search_wrap, textvariable=self.var_busqueda,
+            font=F_BODY, bd=0, relief="flat",
+            bg=C["bg_card"], fg=C["text_1"],
+            insertbackground=C["primary"]
+        )
+        self.entry.pack(side="left", fill="both", expand=True, pady=11, padx=(0, 8))
+        self._ph_set()
+
+        self.entry.bind("<FocusIn>",  self._ph_clear)
+        self.entry.bind("<FocusOut>", self._ph_restore)
+        self.var_busqueda.trace_add("write", self._on_busqueda)
+
+        # Botón limpiar búsqueda
+        btn_clear = tk.Label(
+            search_wrap, text=" ✕ ", font=F_SMALL,
+            bg=C["bg_card"], fg=C["text_3"], cursor="hand2", padx=6
+        )
+        btn_clear.pack(side="right")
+        btn_clear.bind("<Button-1>", self._limpiar_busqueda)
+        Tooltip(btn_clear, "Limpiar búsqueda")
+
+        # ── Grupo de filtros ───────────────────────────────
+        fw = tk.Frame(
+            bar, bg=C["bg_card"],
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        fw.pack(side="left")
+
+        filtros = [
+            ("Todas",        "todas"),
+            ("Aula",         "aula"),
+            ("Laboratorio",  "laboratorio"),
+            ("Sala",         "sala"),
+        ]
+        for label, valor in filtros:
+            btn = tk.Label(fw, text=label, font=F_SMALL, padx=14, pady=11, cursor="hand2")
+            btn.pack(side="left")
+            self._filtro_btns[valor] = btn
+            btn.bind("<Button-1>", lambda e, v=valor: self._set_filtro(v))
+
+        self._refrescar_filtro_ui()
+
+        # Contador de resultados
+        self.lbl_conteo = tk.Label(
+            bar, text="", font=F_SMALL,
+            bg=C["bg_content"], fg=C["text_3"]
+        )
+        self.lbl_conteo.pack(side="right")
+
+    def _set_filtro(self, valor):
+        self._filtro_activo = valor
+        self._refrescar_filtro_ui()
+        self._on_filtro()
+
+    def _refrescar_filtro_ui(self):
+        for v, btn in self._filtro_btns.items():
+            if v == self._filtro_activo:
+                btn.config(bg=C["primary"], fg="white")
+            else:
+                btn.config(bg=C["bg_card"], fg=C["text_2"])
+
+    # ════════════════════════════════════════════════════════
+    #  TABLA PRINCIPAL
+    # ════════════════════════════════════════════════════════
+    def _construir_tabla(self, parent):
+        wrap = tk.Frame(
+            parent, bg=C["bg_card"],
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        wrap.pack(side="left", fill="both", expand=True)
+
+        # Cabecera de la tarjeta-tabla
+        ch = tk.Frame(wrap, bg=C["bg_card"], pady=14)
+        ch.pack(fill="x", padx=18)
+        tk.Label(
+            ch, text="Salas registradas",
+            font=F_HEADING, bg=C["bg_card"], fg=C["text_1"]
+        ).pack(side="left")
+        self.lbl_pie = tk.Label(
+            ch, text="", font=F_SMALL, bg=C["bg_card"], fg=C["text_3"]
+        )
+        self.lbl_pie.pack(side="right")
+
+        # Línea divisoria
+        tk.Frame(wrap, bg=C["border"], height=1).pack(fill="x")
+
+        # Treeview
+        cols = ("id", "nombre", "codigo", "tipo", "estado")
+        self.tree = ttk.Treeview(
+            wrap, columns=cols, show="headings",
+            style="Pro.Treeview", selectmode="browse"
+        )
+
+        columnas_cfg = [
+            ("id",     "#",                  50,  "center", False),
+            ("nombre", "Nombre de la sala",  310, "w",      True),
+            ("codigo", "Código",             120, "center", False),
+            ("tipo",   "Tipo",               130, "center", False),
+            ("estado", "Estado",             150, "center", False),
+        ]
+        for col, txt, ancho, ancla, stretch in columnas_cfg:
+            self.tree.heading(col, text=txt,
+                              command=lambda c=col: self._ordenar(c))
+            self.tree.column(col, width=ancho, anchor=ancla, stretch=stretch)
+
+        # Scrollbar vertical delgado
+        sc = ttk.Scrollbar(
+            wrap, orient="vertical",
+            command=self.tree.yview,
+            style="Thin.Vertical.TScrollbar"
+        )
+        self.tree.configure(yscrollcommand=sc.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        sc.pack(side="right", fill="y")
+
+        # Tags de color semántico por estado
+        self.tree.tag_configure("disponible", foreground=C["green"])
+        self.tree.tag_configure("ocupada",    foreground=C["red"])
+        # Fila impar con fondo ligeramente diferente (zebra striping)
+        self.tree.tag_configure("impar",      background=C["bg_table_alt"])
+
+        # Eventos
+        self.tree.bind("<<TreeviewSelect>>", self._on_seleccion)
+        self.tree.bind("<Motion>",
+                       lambda e: self.tree.config(
+                           cursor="hand2" if self.tree.identify_row(e.y) else ""))
