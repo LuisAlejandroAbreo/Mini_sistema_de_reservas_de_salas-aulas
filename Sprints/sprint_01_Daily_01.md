@@ -5,7 +5,7 @@
 * **Fecha de inicio:** 15 de marzo 2026, 8:00 PM
 * **Fecha de finalización:** 15 de marzo 2026, 8:15 PM
 * **Duración:** 15 Minutos
-* **Equipo:** Scrum Master (Luis), Development Team (Sebastian)
+* **Equipo:** Product Owner (Juan), Scrum Master (Luis), Development Team (Sebastian)
 * **Notas:** El desarrollador Andres no estuvo presente en el Sprint Daily
  
 ---
