@@ -611,3 +611,221 @@ class VentanaPrincipal(tk.Tk):
         self.tree.bind("<Motion>",
                        lambda e: self.tree.config(
                            cursor="hand2" if self.tree.identify_row(e.y) else ""))
+    # ════════════════════════════════════════════════════════
+    #  PANEL DETALLE LATERAL
+    # ════════════════════════════════════════════════════════
+    def _construir_panel_detalle(self, parent):
+        self.panel = tk.Frame(
+            parent, bg=C["bg_card"], width=295,
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        self.panel.pack(side="right", fill="y", padx=(14, 0))
+        self.panel.pack_propagate(False)
+
+        # Cabecera del panel
+        ph = tk.Frame(self.panel, bg=C["bg_sidebar"], pady=14)
+        ph.pack(fill="x")
+        tk.Label(
+            ph, text="Detalle de Sala",
+            font=F_HEADING, bg=C["bg_sidebar"], fg=C["text_white"],
+            padx=18
+        ).pack(side="left")
+
+        # Cuerpo dinámico
+        self.det_body = tk.Frame(self.panel, bg=C["bg_card"])
+        self.det_body.pack(fill="both", expand=True, padx=14, pady=12)
+        self._det_vacio()
+
+    def _det_vacio(self):
+        """Muestra el estado vacío del panel de detalle."""
+        for w in self.det_body.winfo_children():
+            w.destroy()
+        tk.Label(
+            self.det_body,
+            text="Selecciona una sala\npara ver sus detalles",
+            font=F_BODY, bg=C["bg_card"], fg=C["text_3"],
+            justify="center"
+        ).pack(expand=True)
+
+    def _det_sala(self, sala: dict):
+        """Rellena el panel lateral con los datos de la sala seleccionada."""
+        for w in self.det_body.winfo_children():
+            w.destroy()
+
+        disp      = bool(sala["disponible"])
+        col_est   = C["green"]    if disp else C["red"]
+        col_bg    = C["green_bg"] if disp else C["red_bg"]
+        est_txt   = "Disponible"  if disp else "Ocupada"
+
+        # Ícono grande
+        ib = tk.Frame(self.det_body, bg=C["primary_glow"], width=56, height=56)
+        ib.pack_propagate(False)
+        ib.pack(pady=(0, 10))
+        tk.Label(ib, text="🚪", font=("Segoe UI", 22), bg=C["primary_glow"]).pack(expand=True)
+
+        # Nombre de la sala
+        tk.Label(
+            self.det_body, text=sala["nombre"],
+            font=("Segoe UI", 11, "bold"),
+            bg=C["bg_card"], fg=C["text_1"],
+            wraplength=215, justify="center"
+        ).pack()
+
+        # Badge de estado
+        tk.Label(
+            self.det_body, text=f"  {est_txt}  ",
+            font=F_SMALL, bg=col_bg, fg=col_est, pady=5
+        ).pack(pady=(6, 10))
+
+        # Separador
+        tk.Frame(self.det_body, bg=C["border"], height=1).pack(fill="x", pady=(0, 10))
+
+        # Campos de información
+        estado_horario = "6:00 AM - 8:00 PM  ✅ Disponible" if disp else "6:00 AM - 8:00 PM  🔴 Ocupada"
+        campos = [
+            ("Código", sala["codigo"]),
+            ("Tipo",   sala["tipo"].capitalize()),
+            ("ID",     str(sala["id"])),
+            ("Fecha",  estado_horario),
+        ]
+        for lbl, val in campos:
+            fila = tk.Frame(self.det_body, bg=C["bg_card"])
+            fila.pack(fill="x", pady=3)
+            tk.Label(
+                fila, text=lbl, font=F_SMALL,
+                bg=C["bg_card"], fg=C["text_3"],
+                width=7, anchor="w"
+            ).pack(side="left")
+            # Fecha lleva color semántico según disponibilidad
+            fg_val = C["green"] if (lbl == "Fecha" and disp) else (
+                     C["red"]   if (lbl == "Fecha" and not disp) else C["text_1"])
+            tk.Label(
+                fila, text=val, font=F_BOLD if lbl != "Fecha" else F_SMALL,
+                bg=C["bg_card"], fg=fg_val,
+                wraplength=175, justify="left"
+            ).pack(side="left", padx=(6, 0))
+
+        # Separador
+        tk.Frame(self.det_body, bg=C["border"], height=1).pack(fill="x", pady=8)
+
+        # Botón Reservar
+        br = tk.Label(
+            self.det_body, text="   📅  Reservar Sala   ",
+            font=("Segoe UI", 9, "bold"),
+            bg=C["primary"], fg="white",
+            cursor="hand2", pady=10
+        )
+        br.pack(fill="x", pady=(0, 6))
+        br.bind("<Enter>", lambda e: br.config(bg=C["primary_dark"]))
+        br.bind("<Leave>", lambda e: br.config(bg=C["primary"]))
+        Tooltip(br, "Crear una reserva para esta sala")
+
+        # Botón Editar
+        be = tk.Label(
+            self.det_body, text="   ✏️  Editar Información   ",
+            font=F_SMALL,
+            bg=C["bg_content"], fg=C["text_2"],
+            cursor="hand2", pady=10,
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        be.pack(fill="x")
+        be.bind("<Enter>", lambda e: be.config(bg=C["border"]))
+        be.bind("<Leave>", lambda e: be.config(bg=C["bg_content"]))
+        Tooltip(be, "Editar los datos de esta sala")
+
+    # ════════════════════════════════════════════════════════
+    #  CARGA DE DATOS EN LA TABLA
+    # ════════════════════════════════════════════════════════
+    def _cargar_salas(self, salas: list):
+        """Limpia la tabla y la rellena con la lista de salas recibida."""
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        for i, s in enumerate(salas):
+            est_txt = "✅  Disponible" if s["disponible"] else "🔴  Ocupada"
+            t_est   = "disponible"    if s["disponible"] else "ocupada"
+            t_fila  = "impar" if i % 2 != 0 else ""
+            tags    = (t_est, t_fila) if t_fila else (t_est,)
+
+            self.tree.insert(
+                "", "end",
+                values=(s["id"], s["nombre"], s["codigo"],
+                        s["tipo"].capitalize(), est_txt),
+                tags=tags
+            )
+
+        n = len(salas)
+        txt = f"{n} sala{'s' if n != 1 else ''} encontrada{'s' if n != 1 else ''}"
+        self.lbl_conteo.config(text=txt)
+        self.lbl_pie.config(text=txt)
+        self._det_vacio()
+
+    # ════════════════════════════════════════════════════════
+    #  MANEJADORES DE EVENTOS
+    # ════════════════════════════════════════════════════════
+    def _on_seleccion(self, _=None):
+        sel = self.tree.selection()
+        if not sel:
+            return
+        v = self.tree.item(sel[0], "values")
+        # Obtener horario directo de la BD usando el código de la sala
+        try:
+            from consulta import obtener_sala_por_codigo
+            sala_bd = obtener_sala_por_codigo(v[2])
+            horario = sala_bd.get("horario", "6:00 AM - 8:00 PM")
+        except Exception:
+            horario = "6:00 AM - 8:00 PM"
+        sala = {
+            "id":         v[0],
+            "nombre":     v[1],
+            "codigo":     v[2],
+            "tipo":       v[3].lower(),
+            "disponible": 1 if "Disponible" in v[4] else 0,
+            "horario":    horario,
+        }
+        self._det_sala(sala)
+
+    def _on_busqueda(self, *_):
+        t = self.var_busqueda.get()
+        if t in ("", PLACEHOLDER):
+            self._on_filtro()
+            return
+        self._cargar_salas(buscar_salas(t))
+
+    def _on_filtro(self):
+        f = self._filtro_activo
+        if f == "todas":
+            self._cargar_salas(obtener_todas_las_salas())
+        else:
+            self._cargar_salas(filtrar_por_tipo(f))
+
+    def _limpiar_busqueda(self, _=None):
+        self.var_busqueda.set("")
+        self._ph_set()
+        self._on_filtro()
+
+    def _ordenar(self, col):
+        """Ordena la tabla al hacer clic en el encabezado de columna."""
+        desc = self._orden_desc.get(col, False)
+        items = [(self.tree.set(k, col), k) for k in self.tree.get_children("")]
+        items.sort(reverse=desc)
+        for idx, (_, k) in enumerate(items):
+            self.tree.move(k, "", idx)
+        self._orden_desc[col] = not desc
+
+    # ── Placeholder helpers ──────────────────────────────────
+    def _ph_set(self):
+        self.entry.delete(0, "end")
+        self.entry.insert(0, PLACEHOLDER)
+        self.entry.config(fg=C["text_3"])
+
+    def _ph_clear(self, _=None):
+        if self.entry.get() == PLACEHOLDER:
+            self.entry.delete(0, "end")
+            self.entry.config(fg=C["text_1"])
+
+    def _ph_restore(self, _=None):
+        if not self.entry.get():
+            self._ph_set()
