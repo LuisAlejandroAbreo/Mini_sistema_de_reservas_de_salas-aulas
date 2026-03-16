@@ -126,3 +126,28 @@ def buscar_salas(termino: str):
     filas = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas 
+# ── CONSULTA 5: Filtrar por tipo ─────────────────────────────
+def filtrar_por_tipo(tipo: str):
+    """Retorna las salas que coincidan con el tipo indicado."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM salas WHERE LOWER(tipo) = LOWER(?) ORDER BY id",
+        (tipo,)
+    )
+    filas = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+# ── CONSULTA 6: Estadísticas ──────────────────────────────────
+def obtener_estadisticas():
+    """Retorna un dict con total, disponibles y ocupadas."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM salas")
+    total  = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM salas WHERE disponible = 1")
+    disp   = cursor.fetchone()[0]
+    conn.close()
+    return {"total": total, "disponibles": disp, "ocupadas": total - disp}
