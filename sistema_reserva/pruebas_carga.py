@@ -1,0 +1,178 @@
+# ==============================================================
+# PARTE 5: PRUEBAS DE CARGA AL INICIAR SISTEMA
+# Archivo : tests/pruebas_carga.py
+# Motor   : unittest (biblioteca estándar de Python)
+# Ejecutar: python tests/pruebas_carga.py
+#        ó: python -m pytest tests/pruebas_carga.py -v
+# ==============================================================
+
+import sys
+import os
+import unittest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from consulta import (
+    inicializar_base_de_datos,
+    obtener_todas_las_salas,
+    obtener_sala_por_codigo,
+    obtener_salas_disponibles,
+    buscar_salas,
+    filtrar_por_tipo,
+    obtener_estadisticas,
+)
+
+# Inicializar BD antes de cualquier prueba
+inicializar_base_de_datos()
+
+
+# ════════════════════════════════════════════════════════════
+# BLOQUE 1 — Carga de base de datos
+# ════════════════════════════════════════════════════════════
+class TestCargaBaseDeDatos(unittest.TestCase):
+
+    def test_01_retorna_exactamente_3_salas(self):
+        """La BD debe contener exactamente 3 salas al iniciarse."""
+        salas = obtener_todas_las_salas()
+        self.assertEqual(len(salas), 3,
+            f"Se esperaban 3 salas, se obtuvieron {len(salas)}")
+
+    def test_02_cada_sala_tiene_campos_requeridos(self):
+        """Cada sala debe tener: id, nombre, codigo, tipo, disponible."""
+        campos = {"id", "nombre", "codigo", "tipo", "disponible"}
+        for s in obtener_todas_las_salas():
+            for campo in campos:
+                self.assertIn(campo, s,
+                    f"La sala id={s.get('id')} no tiene el campo '{campo}'")
+
+    def test_03_ningun_nombre_o_codigo_vacio(self):
+        """Ningún nombre ni código debe ser cadena vacía."""
+        for s in obtener_todas_las_salas():
+            self.assertTrue(s["nombre"].strip(),
+                f"Sala id={s['id']} tiene nombre vacío")
+            self.assertTrue(s["codigo"].strip(),
+                f"Sala id={s['id']} tiene código vacío")
+
+    def test_04_disponible_solo_contiene_0_o_1(self):
+        """El campo disponible solo debe contener 0 o 1."""
+        for s in obtener_todas_las_salas():
+            self.assertIn(s["disponible"], (0, 1),
+                f"Sala id={s['id']}: valor inválido en 'disponible': {s['disponible']}")
+
+
+# ════════════════════════════════════════════════════════════
+# BLOQUE 2 — Consultas específicas
+# ════════════════════════════════════════════════════════════
+class TestConsultasEspecificas(unittest.TestCase):
+
+    def test_05_codigo_A101_retorna_aula_101(self):
+        """Código A101 debe corresponder a 'Aula 101'."""
+        sala = obtener_sala_por_codigo("A101")
+        self.assertEqual(sala["nombre"], "Aula 101")
+
+    def test_06_codigo_A303_es_tipo_aula(self):
+        """A303 debe existir, llamarse 'Aula 303' y ser de tipo aula."""
+        sala = obtener_sala_por_codigo("A303")
+        self.assertIsNotNone(sala)
+        self.assertEqual(sala["nombre"], "Aula 303")
+        self.assertEqual(sala["tipo"], "aula")
+
+    def test_07_codigo_inexistente_lanza_ValueError(self):
+        """Un código inexistente debe lanzar ValueError."""
+        with self.assertRaises(ValueError):
+            obtener_sala_por_codigo("XXXX99")
+
+    def test_08_hay_exactamente_2_salas_disponibles(self):
+        """Exactamente 2 salas deben estar disponibles al inicio."""
+        disponibles = obtener_salas_disponibles()
+        self.assertEqual(len(disponibles), 2,
+            f"Se esperaban 2, se obtuvieron {len(disponibles)}")
+
+    def test_09_A303_esta_ocupada(self):
+        """Aula 303 debe aparecer como ocupada (disponible=0)."""
+        sala = obtener_sala_por_codigo("A303")
+        self.assertEqual(sala["disponible"], 0)
+
+# ════════════════════════════════════════════════════════════
+# BLOQUE 3 — Búsqueda y filtros
+# ════════════════════════════════════════════════════════════
+class TestBusquedaYFiltros(unittest.TestCase):
+
+    def test_10_buscar_aula_retorna_3_resultados(self):
+        """Buscar 'aula' debe retornar exactamente 3 resultados."""
+        r = buscar_salas("aula")
+        self.assertEqual(len(r), 3,
+            f"Se esperaban 3, se obtuvieron {len(r)}")
+
+    def test_11_buscar_A303_retorna_aula_303(self):
+        """Buscar 'A303' debe retornar exactamente 'Aula 303'."""
+        r = buscar_salas("A303")
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["nombre"], "Aula 303")
+
+    def test_12_buscar_texto_inexistente_retorna_lista_vacia(self):
+        """Búsqueda sin coincidencias debe retornar lista vacía."""
+        r = buscar_salas("ZZZNADA999")
+        self.assertIsInstance(r, list)
+        self.assertEqual(len(r), 0)
+
+    def test_13_filtrar_por_aula_retorna_3(self):
+        """Filtrar por tipo 'aula' debe retornar 3 salas."""
+        r = filtrar_por_tipo("aula")
+        self.assertEqual(len(r), 3)
+
+    def test_14_filtrar_por_sala_retorna_0(self):
+        """Filtrar por tipo 'sala' debe retornar 0 salas."""
+        r = filtrar_por_tipo("sala")
+        self.assertEqual(len(r), 0)
+
+    def test_15_filtrar_por_laboratorio_retorna_0(self):
+        """Filtrar por tipo 'laboratorio' debe retornar 0 salas."""
+        r = filtrar_por_tipo("laboratorio")
+        self.assertEqual(len(r), 0)
+# ════════════════════════════════════════════════════════════
+# BLOQUE 4 — Estadísticas
+# ════════════════════════════════════════════════════════════
+class TestEstadisticas(unittest.TestCase):
+
+    def test_16_estadisticas_son_coherentes(self):
+        """total = disponibles + ocupadas, y valores correctos."""
+        stats = obtener_estadisticas()
+        self.assertEqual(stats["total"],        3)
+        self.assertEqual(stats["disponibles"],  2)
+        self.assertEqual(stats["ocupadas"],     1)
+        self.assertEqual(
+            stats["total"],
+            stats["disponibles"] + stats["ocupadas"],
+            "total no coincide con disponibles + ocupadas"
+        )
+
+
+# ════════════════════════════════════════════════════════════
+# PUNTO DE ENTRADA
+# ════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    loader = unittest.TestLoader()
+    suite  = unittest.TestSuite()
+
+    for cls in [
+        TestCargaBaseDeDatos,
+        TestConsultasEspecificas,
+        TestBusquedaYFiltros,
+        TestEstadisticas,
+    ]:
+        suite.addTests(loader.loadTestsFromTestCase(cls))
+
+    runner    = unittest.TextTestRunner(verbosity=2)
+    resultado = runner.run(suite)
+
+    total  = resultado.testsRun
+    fallos = len(resultado.failures) + len(resultado.errors)
+
+    print(f"\n{'═' * 52}")
+    print(f"  RESULTADO FINAL : {total - fallos}/{total} pruebas pasadas")
+    if fallos == 0:
+        print("  🎉 ¡Todas las pruebas pasaron correctamente!")
+    else:
+        print(f"  ⚠️  {fallos} prueba(s) FALLIDA(S) — revisar errores arriba")
+    print(f"{'═' * 52}\n")
