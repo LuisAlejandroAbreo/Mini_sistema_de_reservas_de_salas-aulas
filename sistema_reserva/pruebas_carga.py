@@ -92,3 +92,41 @@ class TestConsultasEspecificas(unittest.TestCase):
         """Aula 303 debe aparecer como ocupada (disponible=0)."""
         sala = obtener_sala_por_codigo("A303")
         self.assertEqual(sala["disponible"], 0)
+
+# ════════════════════════════════════════════════════════════
+# BLOQUE 3 — Búsqueda y filtros
+# ════════════════════════════════════════════════════════════
+class TestBusquedaYFiltros(unittest.TestCase):
+
+    def test_10_buscar_aula_retorna_3_resultados(self):
+        """Buscar 'aula' debe retornar exactamente 3 resultados."""
+        r = buscar_salas("aula")
+        self.assertEqual(len(r), 3,
+            f"Se esperaban 3, se obtuvieron {len(r)}")
+
+    def test_11_buscar_A303_retorna_aula_303(self):
+        """Buscar 'A303' debe retornar exactamente 'Aula 303'."""
+        r = buscar_salas("A303")
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["nombre"], "Aula 303")
+
+    def test_12_buscar_texto_inexistente_retorna_lista_vacia(self):
+        """Búsqueda sin coincidencias debe retornar lista vacía."""
+        r = buscar_salas("ZZZNADA999")
+        self.assertIsInstance(r, list)
+        self.assertEqual(len(r), 0)
+
+    def test_13_filtrar_por_aula_retorna_3(self):
+        """Filtrar por tipo 'aula' debe retornar 3 salas."""
+        r = filtrar_por_tipo("aula")
+        self.assertEqual(len(r), 3)
+
+    def test_14_filtrar_por_sala_retorna_0(self):
+        """Filtrar por tipo 'sala' debe retornar 0 salas."""
+        r = filtrar_por_tipo("sala")
+        self.assertEqual(len(r), 0)
+
+    def test_15_filtrar_por_laboratorio_retorna_0(self):
+        """Filtrar por tipo 'laboratorio' debe retornar 0 salas."""
+        r = filtrar_por_tipo("laboratorio")
+        self.assertEqual(len(r), 0)
