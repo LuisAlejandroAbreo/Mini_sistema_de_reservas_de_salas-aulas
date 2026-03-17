@@ -1387,13 +1387,13 @@ class VentanaPrincipal(tk.Tk):
                                 relief="solid", bd=1, bg="#f8fafc",
                                 fg=C["text_3"], insertbackground=C["primary"])
         entry_inicio.pack(side="left", fill="x", expand=True, ipady=7)
-        entry_inicio.insert(0, "HH:MM  (ej: 08:00)")
+        entry_inicio.insert(0, "HH:MM  (06:00 – 20:00)")
         def _in_inicio(ev):
-            if entry_inicio.get() == "HH:MM  (ej: 08:00)":
+            if entry_inicio.get() == "HH:MM  (06:00 – 20:00)":
                 entry_inicio.delete(0, "end"); entry_inicio.config(fg=C["text_1"])
         def _out_inicio(ev):
             if not entry_inicio.get().strip():
-                entry_inicio.insert(0, "HH:MM  (ej: 08:00)"); entry_inicio.config(fg=C["text_3"])
+                entry_inicio.insert(0, "HH:MM  (06:00 – 20:00)"); entry_inicio.config(fg=C["text_3"])
         entry_inicio.bind("<FocusIn>",  _in_inicio)
         entry_inicio.bind("<FocusOut>", _out_inicio)
  
@@ -1404,13 +1404,13 @@ class VentanaPrincipal(tk.Tk):
                              relief="solid", bd=1, bg="#f8fafc",
                              fg=C["text_3"], insertbackground=C["primary"])
         entry_fin.pack(side="left", fill="x", expand=True, ipady=7)
-        entry_fin.insert(0, "HH:MM  (ej: 10:00)")
+        entry_fin.insert(0, "HH:MM  (06:00 – 20:00)")
         def _in_fin(ev):
-            if entry_fin.get() == "HH:MM  (ej: 10:00)":
+            if entry_fin.get() == "HH:MM  (06:00 – 20:00)":
                 entry_fin.delete(0, "end"); entry_fin.config(fg=C["text_1"])
         def _out_fin(ev):
             if not entry_fin.get().strip():
-                entry_fin.insert(0, "HH:MM  (ej: 10:00)"); entry_fin.config(fg=C["text_3"])
+                entry_fin.insert(0, "HH:MM  (06:00 – 20:00)"); entry_fin.config(fg=C["text_3"])
         entry_fin.bind("<FocusIn>",  _in_fin)
         entry_fin.bind("<FocusOut>", _out_fin)
  
@@ -1437,8 +1437,8 @@ class VentanaPrincipal(tk.Tk):
         pie = tk.Frame(modal, bg=C["bg_content"], pady=12, padx=24)
         pie.pack(fill="x", side="bottom")
  
-        ph_inicio = "HH:MM  (ej: 08:00)"
-        ph_fin    = "HH:MM  (ej: 10:00)"
+        ph_inicio = "HH:MM  (06:00 – 20:00)"
+        ph_fin    = "HH:MM  (06:00 – 20:00)"
  
         def _leer(entry, ph):
             v = entry.get().strip()
@@ -1461,9 +1461,9 @@ class VentanaPrincipal(tk.Tk):
             if not fecha:
                 lbl_msg.config(text="La fecha es obligatoria.", fg=C["red"]); return
             if not inicio:
-                lbl_msg.config(text="La hora de inicio es obligatoria.", fg=C["red"]); return
+                lbl_msg.config(text="La hora de inicio es obligatoria (HH:MM, ej: 08:00).", fg=C["red"]); return
             if not fin:
-                lbl_msg.config(text="La hora de fin es obligatoria.", fg=C["red"]); return
+                lbl_msg.config(text="La hora de fin es obligatoria (HH:MM, ej: 18:00).", fg=C["red"]); return
             if not resp:
                 lbl_msg.config(text="El responsable es obligatorio.", fg=C["red"]); return
  
@@ -1835,3 +1835,4 @@ class VentanaPrincipal(tk.Tk):
  
 # En el __init__ de VentanaPrincipal, inicia el ciclo:
 # self._verificacion_periodica()
+ 
