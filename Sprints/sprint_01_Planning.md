@@ -4,14 +4,14 @@
 * **Fecha de inicio:** 13 de marzo 2026
 * **Fecha de finalización:** 17 de marzo 2026
 * **Duración:** 5 días
-* **Prioridad:** 1 y 2
+* **Prioridad:** 1, 2 y 3
 
 ---
 
 ## Sprint Goal
-**Objetivo:** Permitir al usuario visualizar las salas disponibles y consultar las reservas en el sistema.
+**Objetivo:** Permitir al usuario visualizar las salas disponibles, consultar las reservas en el sistema y crear una reserva de sala.
 
-**Incremento esperado:** Sistema funcional para consultar salas y reservas.
+**Incremento esperado:** Sistema funcional que implemente un orden adecuado a las solicitudes de reservas.
 
 ---
 
@@ -21,6 +21,7 @@
 | :--- | :--- |
 | **HU1** - Ver salas disponibles | Base del sistema para visualizar salas |
 | **HU2** - Consultar reserva | Base del sistema para visualizar reservas |
+| **HU3** - Crear reserva | Base del sistema para reserva de sala |
 
 ---
 
@@ -45,3 +46,13 @@
 | Ordenar reservas por hora de inicio | Dev. (Jesus) | To Do |
 | Mostrar lista de reservas | Dev. (Jesus) | To Do |
 | Mostrar información de cada reserva | Dev. (Jesus) | To Do |
+
+### HU3 - Crear reserva
+| Tarea | Responsable | Estado |
+| :--- | :--- | :--- |
+| Diseñar formulario de reserva  | Dev. (Luis) | To Do |
+| Validación de campos obligatorios | Dev. (Luis) | To Do |
+| Implementar lógica de verificación de disponibilidad | Dev. (Luis) | To Do |
+| Manejar la persistencia de datos en el sistema | Dev. (Luis) | To Do |
+| Diseñar e integrar mensaje de confirmación | Dev. (Luis) | To Do |
+| Pruebas de flujo completo | Dev. (Luis) | To Do |
