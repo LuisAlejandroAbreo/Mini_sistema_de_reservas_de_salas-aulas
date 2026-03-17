@@ -418,6 +418,7 @@ def filtrar_por_tipo(tipo: str):
 # ── CONSULTA 6: Estadísticas ──────────────────────────────────
 def obtener_estadisticas():
     """Retorna un dict con total, disponibles y ocupadas."""
+    actualizar_estado_salas_y_reservas()
     conn   = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM salas")
