@@ -3,24 +3,24 @@
 # Archivo : database/db_consulta.py
 # Motor   : SQLite3 (base de datos local, archivo .db)
 # ==============================================================
-
+ 
 import sqlite3
 import os
 from datetime import datetime
-
+ 
 # Ruta del archivo de base de datos
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH  = os.path.join(BASE_DIR, "reservas.db")
-
-
+ 
+ 
 # ── Conexión ────────────────────────────────────────────────
 def obtener_conexion():
     """Retorna una conexión SQLite con Row como factory."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-
+ 
+ 
 # ── Crear tabla e insertar datos iniciales ───────────────────
 def inicializar_base_de_datos():
     """Crea la tabla 'salas' y carga los datos de ejemplo si está vacía.
@@ -36,10 +36,10 @@ def inicializar_base_de_datos():
             test.close()
             os.remove(DB_PATH)
             print("🗑️  Archivo corrupto eliminado.")
-
+ 
     conn   = obtener_conexion()
     cursor = conn.cursor()
-
+ 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS salas (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +50,7 @@ def inicializar_base_de_datos():
             horario     TEXT    NOT NULL DEFAULT '6:00 AM - 8:00 PM'
         )
     """)
-
+ 
     # Migración: agregar columna horario si la BD ya existía sin ella
     try:
         cursor.execute(
@@ -58,7 +58,7 @@ def inicializar_base_de_datos():
         )
     except Exception:
         pass  # columna ya existe
-
+ 
     # Solo insertar si la tabla está vacía
     cursor.execute("SELECT COUNT(*) FROM salas")
     if cursor.fetchone()[0] == 0:
@@ -71,7 +71,7 @@ def inicializar_base_de_datos():
             "INSERT INTO salas (nombre, codigo, tipo, disponible, horario) VALUES (?,?,?,?,?)",
             datos_iniciales
         )
-
+ 
     # ── Tabla reservas ──────────────────────────────────────
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS reservas (
@@ -88,15 +88,15 @@ def inicializar_base_de_datos():
             FOREIGN KEY (sala_id) REFERENCES salas(id)
         )
     """)
-
+ 
     conn.commit()
     conn.close()
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════
 #  RESERVAS — Consultas y acciones
 # ════════════════════════════════════════════════════════════
-
+ 
 def obtener_todas_las_reservas():
     """Retorna la lista completa de reservas ordenadas por fecha y hora."""
     conn   = obtener_conexion()
@@ -107,8 +107,8 @@ def obtener_todas_las_reservas():
     filas = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
+ 
+ 
 def obtener_reserva_por_id(reserva_id: int):
     """Retorna una reserva dado su id. Lanza ValueError si no existe."""
     conn   = obtener_conexion()
@@ -119,8 +119,8 @@ def obtener_reserva_por_id(reserva_id: int):
     if fila is None:
         raise ValueError(f"No se encontró ninguna reserva con id: {reserva_id}")
     return dict(fila)
-
-
+ 
+ 
 def buscar_reservas(termino: str):
     """Busca reservas por sala, responsable o descripción."""
     conn   = obtener_conexion()
@@ -139,8 +139,8 @@ def buscar_reservas(termino: str):
     filas = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
+ 
+ 
 def filtrar_reservas_por_estado(estado: str):
     """Filtra reservas por estado: 'activa', 'cancelada' o 'finalizada'."""
     conn   = obtener_conexion()
@@ -152,8 +152,8 @@ def filtrar_reservas_por_estado(estado: str):
     filas = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
+ 
+ 
 def obtener_estadisticas_reservas():
     """Retorna dict con total, activas, canceladas y finalizadas."""
     conn   = obtener_conexion()
@@ -174,7 +174,7 @@ def obtener_estadisticas_reservas():
         "finalizadas": finalizadas,
     }
 # En consulta.py
-
+ 
 def actualizar_estado_salas_y_reservas():
     """
     Sincroniza el estado de las salas basándose en las reservas activas
@@ -220,13 +220,13 @@ def actualizar_estado_salas_y_reservas():
         print(f"Error actualizando estados: {e}")
     finally:
         conn.close()
-
+ 
 # Modificar crear_reserva para que llame a esta validación
 def crear_reserva_actualizada(datos):
     # ... lógica existente de inserción ...
     # Después de insertar, actualizamos estados inmediatamente
     actualizar_estado_salas_y_reservas()
-
+ 
 def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
                   fecha: str, hora_inicio: str, hora_fin: str,
                   responsable: str, descripcion: str = ""):
@@ -238,16 +238,25 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
             raise ValueError("No se pueden hacer reservas en fechas pasadas.")
     except ValueError:
         raise ValueError("Formato de fecha inválido. Use AAAA-MM-DD.")
-
-    # 2. Validar que hora_fin > hora_inicio
+ 
+    # 2. Validar formato, rango permitido (06:00–20:00) y que hora_fin > hora_inicio
+    HORA_APERTURA = datetime.strptime("06:00", "%H:%M")
+    HORA_CIERRE   = datetime.strptime("20:00", "%H:%M")
     try:
         h_ini = datetime.strptime(hora_inicio, "%H:%M")
-        h_fin = datetime.strptime(hora_fin, "%H:%M")
-        if h_fin <= h_ini:
-            raise ValueError("La hora de finalización debe ser mayor a la de inicio.")
+        h_fin = datetime.strptime(hora_fin,    "%H:%M")
     except ValueError:
-        raise ValueError("Formato de hora inválido. Use HH:MM (24h).")
-
+        raise ValueError("Formato de hora inválido. Use HH:MM en formato 24 horas.")
+ 
+    if h_fin <= h_ini:
+        raise ValueError("La hora de finalización debe ser mayor a la de inicio.")
+ 
+    if h_ini < HORA_APERTURA or h_fin > HORA_CIERRE:
+        raise ValueError(
+            "El horario de reservas es de 06:00 a 20:00. "
+            "No se pueden registrar reservas fuera de ese rango."
+        )
+ 
     # 3. Validar disponibilidad de la sala y cruces
     conn = obtener_conexion()
     cursor = conn.cursor()
@@ -262,16 +271,16 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
     if cursor.fetchone():
         conn.close()
         raise ValueError("La sala ya tiene una reserva activa en este horario.")
-
+ 
     # ... proceder con el INSERT
     """Inserta una nueva reserva. Valida solapamiento de horarios.
-
+ 
     Retorna el id asignado si tiene éxito.
     Lanza ValueError si hay conflicto de horario o datos inválidos.
     """
     responsable = responsable.strip()
     descripcion = descripcion.strip()
-
+ 
     if not responsable:
         raise ValueError("El nombre del responsable no puede estar vacío.")
     if not fecha:
@@ -280,11 +289,11 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
         raise ValueError("Las horas de inicio y fin son obligatorias.")
     if hora_inicio >= hora_fin:
         raise ValueError("La hora de inicio debe ser anterior a la hora de fin.")
-
+ 
     conn   = obtener_conexion()
     cursor = conn.cursor()
     actualizar_estado_salas_y_reservas()
-
+ 
     # Verificar solapamiento en la misma sala y fecha
     cursor.execute(
         """SELECT id FROM reservas
@@ -301,7 +310,7 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
             f"Ya existe una reserva activa para '{sala_nombre}' "
             f"en esa fecha que se solapa con el horario indicado."
         )
-
+ 
     cursor.execute(
         """INSERT INTO reservas
            (sala_id, sala_nombre, sala_codigo, fecha,
@@ -314,10 +323,10 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
     nuevo_id = cursor.lastrowid
     conn.close()
     return nuevo_id
-
+ 
     
-
-
+ 
+ 
 def cancelar_reserva(reserva_id: int):
     """Cambia el estado de una reserva a 'cancelada'."""
     conn   = obtener_conexion()
@@ -330,8 +339,8 @@ def cancelar_reserva(reserva_id: int):
         raise ValueError(f"No se encontró la reserva con id: {reserva_id}")
     conn.commit()
     conn.close()
-
-
+ 
+ 
 # ── CONSULTA 1: Todas las salas ──────────────────────────────
 def obtener_todas_las_salas():
     
@@ -345,9 +354,9 @@ def obtener_todas_las_salas():
     filas  = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
-
+ 
+ 
+ 
 # ── CONSULTA 2: Sala por código ──────────────────────────────
 def obtener_sala_por_codigo(codigo: str):
     """Retorna una sala dado su código exacto (insensible a mayúsculas)."""
@@ -361,8 +370,8 @@ def obtener_sala_por_codigo(codigo: str):
     if fila is None:
         raise ValueError(f"No se encontró ninguna sala con el código: {codigo}")
     return dict(fila)
-
-
+ 
+ 
 # ── CONSULTA 3: Salas disponibles ────────────────────────────
 def obtener_salas_disponibles():
     """Retorna solo las salas que no tienen reservas en curso ahora mismo."""
@@ -374,8 +383,8 @@ def obtener_salas_disponibles():
     filas  = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
+ 
+ 
 # ── CONSULTA 4: Búsqueda libre (nombre o código) ─────────────
 def buscar_salas(termino: str):
     """Busca salas cuyo nombre O código contenga el término dado."""
@@ -404,8 +413,8 @@ def filtrar_por_tipo(tipo: str):
     filas = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
-
-
+ 
+ 
 # ── CONSULTA 6: Estadísticas ──────────────────────────────────
 def obtener_estadisticas():
     """Retorna un dict con total, disponibles y ocupadas."""
@@ -417,36 +426,36 @@ def obtener_estadisticas():
     disp   = cursor.fetchone()[0]
     conn.close()
     return {"total": total, "disponibles": disp, "ocupadas": total - disp}
-
-
+ 
+ 
 # ── ACCIÓN 1: Crear nueva sala ────────────────────────────────
 def crear_sala(nombre: str, codigo: str, tipo: str,
                disponible: int = 1, horario: str = "6:00 AM - 8:00 PM"):
     """Inserta una nueva sala en la BD.
-
+ 
     Retorna el id asignado si tiene éxito.
     Lanza ValueError si el código ya existe o los datos son inválidos.
     """
     nombre  = nombre.strip()
     codigo  = codigo.strip().upper()
     tipo    = tipo.strip().lower()
-
+ 
     if not nombre:
         raise ValueError("El nombre de la sala no puede estar vacío.")
     if not codigo:
         raise ValueError("El código de la sala no puede estar vacío.")
     if tipo not in ("aula", "laboratorio", "sala"):
         raise ValueError(f"Tipo '{tipo}' no válido. Use: aula, laboratorio o sala.")
-
+ 
     conn   = obtener_conexion()
     cursor = conn.cursor()
-
+ 
     # Verificar que el código no se repita
     cursor.execute("SELECT id FROM salas WHERE LOWER(codigo) = LOWER(?)", (codigo,))
     if cursor.fetchone() is not None:
         conn.close()
         raise ValueError(f"Ya existe una sala con el código '{codigo}'.")
-
+ 
     cursor.execute(
         "INSERT INTO salas (nombre, codigo, tipo, disponible, horario) VALUES (?,?,?,?,?)",
         (nombre, codigo, tipo, disponible, horario),
