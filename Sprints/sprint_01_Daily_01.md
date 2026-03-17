@@ -29,4 +29,4 @@
 | Sebastian | Mostrar nombre o código de sala | | | |
 | Sebastian | Pruebas de carga al iniciar sistema | | | |
  --- 
-![alt text](<Captura desde 2026-03-16 15-29-23.png>)
+![alt text](<daily_01.png>)
