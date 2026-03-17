@@ -71,8 +71,177 @@ def inicializar_base_de_datos():
             datos_iniciales
         )
 
+    # ── Tabla reservas ──────────────────────────────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reservas (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            sala_id       INTEGER NOT NULL,
+            sala_nombre   TEXT    NOT NULL,
+            sala_codigo   TEXT    NOT NULL,
+            fecha         TEXT    NOT NULL,
+            hora_inicio   TEXT    NOT NULL,
+            hora_fin      TEXT    NOT NULL,
+            responsable   TEXT    NOT NULL,
+            descripcion   TEXT    NOT NULL DEFAULT '',
+            estado        TEXT    NOT NULL DEFAULT 'activa',
+            FOREIGN KEY (sala_id) REFERENCES salas(id)
+        )
+    """)
+
     conn.commit()
     conn.close()
+
+
+# ════════════════════════════════════════════════════════════
+#  RESERVAS — Consultas y acciones
+# ════════════════════════════════════════════════════════════
+
+def obtener_todas_las_reservas():
+    """Retorna la lista completa de reservas ordenadas por fecha y hora."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM reservas ORDER BY fecha DESC, hora_inicio DESC"
+    )
+    filas = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+def obtener_reserva_por_id(reserva_id: int):
+    """Retorna una reserva dado su id. Lanza ValueError si no existe."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM reservas WHERE id = ?", (reserva_id,))
+    fila = cursor.fetchone()
+    conn.close()
+    if fila is None:
+        raise ValueError(f"No se encontró ninguna reserva con id: {reserva_id}")
+    return dict(fila)
+
+
+def buscar_reservas(termino: str):
+    """Busca reservas por sala, responsable o descripción."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    like   = f"%{termino.lower()}%"
+    cursor.execute(
+        """SELECT * FROM reservas
+           WHERE LOWER(sala_nombre)  LIKE ?
+              OR LOWER(sala_codigo)  LIKE ?
+              OR LOWER(responsable)  LIKE ?
+              OR LOWER(descripcion)  LIKE ?
+              OR fecha               LIKE ?
+           ORDER BY fecha DESC, hora_inicio DESC""",
+        (like, like, like, like, like)
+    )
+    filas = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+def filtrar_reservas_por_estado(estado: str):
+    """Filtra reservas por estado: 'activa', 'cancelada' o 'finalizada'."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM reservas WHERE LOWER(estado) = LOWER(?) ORDER BY fecha DESC",
+        (estado,)
+    )
+    filas = [dict(f) for f in cursor.fetchall()]
+    conn.close()
+    return filas
+
+
+def obtener_estadisticas_reservas():
+    """Retorna dict con total, activas, canceladas y finalizadas."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM reservas")
+    total = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM reservas WHERE estado = 'activa'")
+    activas = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM reservas WHERE estado = 'cancelada'")
+    canceladas = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM reservas WHERE estado = 'finalizada'")
+    finalizadas = cursor.fetchone()[0]
+    conn.close()
+    return {
+        "total": total,
+        "activas": activas,
+        "canceladas": canceladas,
+        "finalizadas": finalizadas,
+    }
+
+
+def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
+                  fecha: str, hora_inicio: str, hora_fin: str,
+                  responsable: str, descripcion: str = ""):
+    """Inserta una nueva reserva. Valida solapamiento de horarios.
+
+    Retorna el id asignado si tiene éxito.
+    Lanza ValueError si hay conflicto de horario o datos inválidos.
+    """
+    responsable = responsable.strip()
+    descripcion = descripcion.strip()
+
+    if not responsable:
+        raise ValueError("El nombre del responsable no puede estar vacío.")
+    if not fecha:
+        raise ValueError("La fecha es obligatoria.")
+    if not hora_inicio or not hora_fin:
+        raise ValueError("Las horas de inicio y fin son obligatorias.")
+    if hora_inicio >= hora_fin:
+        raise ValueError("La hora de inicio debe ser anterior a la hora de fin.")
+
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+
+    # Verificar solapamiento en la misma sala y fecha
+    cursor.execute(
+        """SELECT id FROM reservas
+           WHERE sala_id = ?
+             AND fecha   = ?
+             AND estado  != 'cancelada'
+             AND hora_inicio < ?
+             AND hora_fin    > ?""",
+        (sala_id, fecha, hora_fin, hora_inicio)
+    )
+    if cursor.fetchone() is not None:
+        conn.close()
+        raise ValueError(
+            f"Ya existe una reserva activa para '{sala_nombre}' "
+            f"en esa fecha que se solapa con el horario indicado."
+        )
+
+    cursor.execute(
+        """INSERT INTO reservas
+           (sala_id, sala_nombre, sala_codigo, fecha,
+            hora_inicio, hora_fin, responsable, descripcion, estado)
+           VALUES (?,?,?,?,?,?,?,?,'activa')""",
+        (sala_id, sala_nombre, sala_codigo, fecha,
+         hora_inicio, hora_fin, responsable, descripcion),
+    )
+    conn.commit()
+    nuevo_id = cursor.lastrowid
+    conn.close()
+    return nuevo_id
+
+
+def cancelar_reserva(reserva_id: int):
+    """Cambia el estado de una reserva a 'cancelada'."""
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE reservas SET estado = 'cancelada' WHERE id = ?", (reserva_id,)
+    )
+    if cursor.rowcount == 0:
+        conn.close()
+        raise ValueError(f"No se encontró la reserva con id: {reserva_id}")
+    conn.commit()
+    conn.close()
+
+
 # ── CONSULTA 1: Todas las salas ──────────────────────────────
 def obtener_todas_las_salas():
     """Retorna la lista completa de salas registradas."""
