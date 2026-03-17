@@ -1692,3 +1692,24 @@ class VentanaPrincipal(tk.Tk):
 
         # Poner foco en el primer campo
         entry_nombre.focus_set()
+        # En visualizacion.py dentro de la clase VentanaPrincipal
+
+    def _verificacion_periodica(self):
+        """Refresca los estados de salas y reservas automáticamente."""
+        from consulta import actualizar_estado_salas_y_reservas
+        actualizar_estado_salas_y_reservas()
+    
+    # Refrescar la vista actual para mostrar cambios
+        if self._vista_activa == "salas":
+            self._on_filtro()
+        else:
+            self._on_rfiltro()
+        
+        self._construir_kpis()
+        self._construir_kpis_reservas()
+    
+    #    Programar siguiente ejecución en 60 segundos
+        self.after(60000, self._verificacion_periodica)
+
+# En el __init__ de VentanaPrincipal, inicia el ciclo:
+# self._verificacion_periodica()
