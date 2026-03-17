@@ -151,3 +151,41 @@ def obtener_estadisticas():
     disp   = cursor.fetchone()[0]
     conn.close()
     return {"total": total, "disponibles": disp, "ocupadas": total - disp}
+
+
+# ── ACCIÓN 1: Crear nueva sala ────────────────────────────────
+def crear_sala(nombre: str, codigo: str, tipo: str,
+               disponible: int = 1, horario: str = "6:00 AM - 8:00 PM"):
+    """Inserta una nueva sala en la BD.
+
+    Retorna el id asignado si tiene éxito.
+    Lanza ValueError si el código ya existe o los datos son inválidos.
+    """
+    nombre  = nombre.strip()
+    codigo  = codigo.strip().upper()
+    tipo    = tipo.strip().lower()
+
+    if not nombre:
+        raise ValueError("El nombre de la sala no puede estar vacío.")
+    if not codigo:
+        raise ValueError("El código de la sala no puede estar vacío.")
+    if tipo not in ("aula", "laboratorio", "sala"):
+        raise ValueError(f"Tipo '{tipo}' no válido. Use: aula, laboratorio o sala.")
+
+    conn   = obtener_conexion()
+    cursor = conn.cursor()
+
+    # Verificar que el código no se repita
+    cursor.execute("SELECT id FROM salas WHERE LOWER(codigo) = LOWER(?)", (codigo,))
+    if cursor.fetchone() is not None:
+        conn.close()
+        raise ValueError(f"Ya existe una sala con el código '{codigo}'.")
+
+    cursor.execute(
+        "INSERT INTO salas (nombre, codigo, tipo, disponible, horario) VALUES (?,?,?,?,?)",
+        (nombre, codigo, tipo, disponible, horario),
+    )
+    conn.commit()
+    nuevo_id = cursor.lastrowid
+    conn.close()
+    return nuevo_id

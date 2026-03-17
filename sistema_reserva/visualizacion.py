@@ -20,6 +20,7 @@ from consulta import (
     buscar_salas,
     filtrar_por_tipo,
     obtener_estadisticas,
+    crear_sala,
 )
 
 # ════════════════════════════════════════════════════════════
@@ -349,6 +350,7 @@ class VentanaPrincipal(tk.Tk):
         btn_nueva.pack(side="right", padx=(10, 0))
         btn_nueva.bind("<Enter>", lambda e: btn_nueva.config(bg=C["primary_dark"]))
         btn_nueva.bind("<Leave>", lambda e: btn_nueva.config(bg=C["primary"]))
+        btn_nueva.bind("<Button-1>", lambda e: self._abrir_modal_crear_sala())
         Tooltip(btn_nueva, "Agregar una nueva sala al sistema")
 
         # Botón Exportar
@@ -829,3 +831,189 @@ class VentanaPrincipal(tk.Tk):
     def _ph_restore(self, _=None):
         if not self.entry.get():
             self._ph_set()
+
+    # ════════════════════════════════════════════════════════
+    #  MODAL — CREAR NUEVA SALA
+    # ════════════════════════════════════════════════════════
+    def _abrir_modal_crear_sala(self):
+        """Abre una ventana modal para registrar una nueva sala."""
+        modal = tk.Toplevel(self)
+        modal.title("Nueva Sala")
+        modal.geometry("480x500")
+        modal.resizable(False, False)
+        modal.configure(bg=C["bg_card"])
+        modal.grab_set()
+        modal.transient(self)
+
+        # Centrar modal
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width()  - 480) // 2
+        y = self.winfo_y() + (self.winfo_height() - 500) // 2
+        modal.geometry(f"+{x}+{y}")
+
+        # ── Cabecera ──────────────────────────────────────
+        cab = tk.Frame(modal, bg=C["bg_sidebar"], pady=16)
+        cab.pack(fill="x")
+        tk.Label(
+            cab, text="  +  Registrar Nueva Sala",
+            font=("Segoe UI", 11, "bold"),
+            bg=C["bg_sidebar"], fg=C["text_white"],
+            padx=20
+        ).pack(side="left")
+
+        # ── Cuerpo ────────────────────────────────────────
+        cuerpo = tk.Frame(modal, bg=C["bg_card"])
+        cuerpo.pack(fill="both", expand=True, padx=28, pady=16)
+
+        # ── Helper para crear campo de texto ──────────────
+        def hacer_entry(parent, etiqueta, ph_texto):
+            """Crea label + Entry con placeholder manual (sin StringVar para evitar conflictos)."""
+            tk.Label(
+                parent, text=etiqueta,
+                font=("Segoe UI", 10, "bold"),
+                bg=C["bg_card"], fg=C["text_2"], anchor="w"
+            ).pack(anchor="w", pady=(10, 3))
+
+            entry = tk.Entry(
+                parent,
+                font=("Segoe UI", 10),
+                relief="solid", bd=1,
+                bg="#f8fafc", fg=C["text_3"],
+                insertbackground=C["primary"],
+            )
+            entry.pack(fill="x", ipady=7)
+            entry.insert(0, ph_texto)
+
+            def on_focus_in(ev):
+                if entry.get() == ph_texto:
+                    entry.delete(0, "end")
+                    entry.config(fg=C["text_1"])
+
+            def on_focus_out(ev):
+                if not entry.get().strip():
+                    entry.insert(0, ph_texto)
+                    entry.config(fg=C["text_3"])
+
+            entry.bind("<FocusIn>",  on_focus_in)
+            entry.bind("<FocusOut>", on_focus_out)
+            return entry, ph_texto
+
+        entry_nombre, ph_nombre = hacer_entry(cuerpo, "Nombre de la sala *",
+                                               "Ej: Laboratorio de Computo 3")
+        entry_codigo, ph_codigo = hacer_entry(cuerpo, "Codigo unico *", "Ej: LAB03")
+
+        # ── Tipo ──────────────────────────────────────────
+        tk.Label(
+            cuerpo, text="Tipo *",
+            font=("Segoe UI", 10, "bold"),
+            bg=C["bg_card"], fg=C["text_2"], anchor="w"
+        ).pack(anchor="w", pady=(12, 4))
+
+        var_tipo  = tk.StringVar(value="aula")
+        f_tipo    = tk.Frame(cuerpo, bg=C["bg_card"])
+        f_tipo.pack(anchor="w")
+        for val, lbl in [("aula", "Aula"), ("laboratorio", "Laboratorio"), ("sala", "Sala")]:
+            tk.Radiobutton(
+                f_tipo, text=lbl, variable=var_tipo, value=val,
+                font=("Segoe UI", 10),
+                bg=C["bg_card"], fg=C["text_1"],
+                activebackground=C["bg_card"],
+                selectcolor=C["primary_glow"],
+                cursor="hand2"
+            ).pack(side="left", padx=(0, 18))
+
+        # ── Estado inicial ────────────────────────────────
+        tk.Label(
+            cuerpo, text="Estado inicial *",
+            font=("Segoe UI", 10, "bold"),
+            bg=C["bg_card"], fg=C["text_2"], anchor="w"
+        ).pack(anchor="w", pady=(12, 4))
+
+        var_disp  = tk.IntVar(value=1)
+        f_disp    = tk.Frame(cuerpo, bg=C["bg_card"])
+        f_disp.pack(anchor="w")
+        for val, lbl in [(1, "Disponible"), (0, "Ocupada")]:
+            tk.Radiobutton(
+                f_disp, text=lbl, variable=var_disp, value=val,
+                font=("Segoe UI", 10),
+                bg=C["bg_card"], fg=C["text_1"],
+                activebackground=C["bg_card"],
+                selectcolor=C["primary_glow"],
+                cursor="hand2"
+            ).pack(side="left", padx=(0, 18))
+
+        # ── Mensaje de error/éxito ────────────────────────
+        lbl_msg = tk.Label(
+            cuerpo, text="",
+            font=("Segoe UI", 9),
+            bg=C["bg_card"], fg=C["red"],
+            wraplength=400, justify="left"
+        )
+        lbl_msg.pack(anchor="w", pady=(10, 0))
+
+        # ── Pie de botones ────────────────────────────────
+        pie = tk.Frame(modal, bg=C["bg_content"], pady=12, padx=24)
+        pie.pack(fill="x", side="bottom")
+
+        def _leer_campo(entry, placeholder):
+            """Lee el Entry y devuelve '' si contiene el placeholder."""
+            val = entry.get().strip()
+            return "" if val == placeholder else val
+
+        def _guardar():
+            nombre = _leer_campo(entry_nombre, ph_nombre)
+            codigo = _leer_campo(entry_codigo, ph_codigo)
+            tipo   = var_tipo.get()
+            disp   = var_disp.get()
+
+            if not nombre:
+                lbl_msg.config(text="El nombre de la sala es obligatorio.", fg=C["red"])
+                entry_nombre.focus_set()
+                return
+            if not codigo:
+                lbl_msg.config(text="El codigo de la sala es obligatorio.", fg=C["red"])
+                entry_codigo.focus_set()
+                return
+
+            try:
+                crear_sala(nombre, codigo, tipo, disp)
+                self._construir_kpis()
+                self._on_filtro()
+                lbl_msg.config(
+                    text=f"Sala '{nombre}' creada correctamente.",
+                    fg=C["green"]
+                )
+                modal.after(1400, modal.destroy)
+
+            except ValueError as err:
+                lbl_msg.config(text=str(err), fg=C["red"])
+
+        btn_g = tk.Label(
+            pie, text="  Guardar sala  ",
+            font=("Segoe UI", 9, "bold"),
+            bg=C["primary"], fg="white",
+            cursor="hand2", pady=8
+        )
+        btn_g.pack(side="right", padx=(10, 0))
+        btn_g.bind("<Button-1>", lambda e: _guardar())
+        btn_g.bind("<Enter>", lambda e: btn_g.config(bg=C["primary_dark"]))
+        btn_g.bind("<Leave>", lambda e: btn_g.config(bg=C["primary"]))
+
+        # Permitir guardar con Enter
+        modal.bind("<Return>", lambda e: _guardar())
+
+        btn_c = tk.Label(
+            pie, text="  Cancelar  ",
+            font=("Segoe UI", 9),
+            bg=C["bg_content"], fg=C["text_2"],
+            cursor="hand2", pady=8,
+            highlightbackground=C["border"],
+            highlightthickness=1
+        )
+        btn_c.pack(side="right")
+        btn_c.bind("<Button-1>", lambda e: modal.destroy())
+        btn_c.bind("<Enter>", lambda e: btn_c.config(bg=C["border"]))
+        btn_c.bind("<Leave>", lambda e: btn_c.config(bg=C["bg_content"]))
+
+        # Poner foco en el primer campo
+        entry_nombre.focus_set()
