@@ -6,6 +6,7 @@
 
 import sqlite3
 import os
+from datetime import datetime
 
 # Ruta del archivo de base de datos
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -172,11 +173,97 @@ def obtener_estadisticas_reservas():
         "canceladas": canceladas,
         "finalizadas": finalizadas,
     }
+# En consulta.py
 
+def actualizar_estado_salas_y_reservas():
+    """
+    Sincroniza el estado de las salas basándose en las reservas activas
+    y la hora actual del sistema.
+    """
+    ahora = datetime.now()
+    fecha_actual = ahora.strftime("%Y-%m-%d")
+    hora_actual = ahora.strftime("%H:%M")
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    try:
+        # 1. Finalizar automáticamente reservas que ya pasaron
+        cursor.execute("""
+            UPDATE reservas 
+            SET estado = 'finalizada' 
+            WHERE estado = 'activa' 
+            AND (fecha < ? OR (fecha = ? AND hora_fin <= ?))
+        """, (fecha_actual, fecha_actual, hora_actual))
+        
+        # 2. Resetear todas las salas a disponibles (1)
+        cursor.execute("UPDATE salas SET disponible = 1")
+        
+        # 3. Marcar como ocupadas (0) solo las salas que tienen una reserva 
+        # activa en este preciso momento (fecha hoy y hora actual entre inicio y fin)
+        cursor.execute("""
+            UPDATE salas 
+            SET disponible = 0 
+            WHERE id IN (
+                SELECT DISTINCT sala_id 
+                FROM reservas 
+                WHERE estado = 'activa' 
+                AND fecha = ? 
+                AND ? >= hora_inicio 
+                AND ? < hora_fin
+            )
+        """, (fecha_actual, hora_actual, hora_actual))
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error actualizando estados: {e}")
+    finally:
+        conn.close()
+
+# Modificar crear_reserva para que llame a esta validación
+def crear_reserva_actualizada(datos):
+    # ... lógica existente de inserción ...
+    # Después de insertar, actualizamos estados inmediatamente
+    actualizar_estado_salas_y_reservas()
 
 def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
                   fecha: str, hora_inicio: str, hora_fin: str,
                   responsable: str, descripcion: str = ""):
+    # 1. Validar formato de fecha (YYYY-MM-DD)
+    
+    try:
+        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d").date()
+        if fecha_dt < datetime.now().date():
+            raise ValueError("No se pueden hacer reservas en fechas pasadas.")
+    except ValueError:
+        raise ValueError("Formato de fecha inválido. Use AAAA-MM-DD.")
+
+    # 2. Validar que hora_fin > hora_inicio
+    try:
+        h_ini = datetime.strptime(hora_inicio, "%H:%M")
+        h_fin = datetime.strptime(hora_fin, "%H:%M")
+        if h_fin <= h_ini:
+            raise ValueError("La hora de finalización debe ser mayor a la de inicio.")
+    except ValueError:
+        raise ValueError("Formato de hora inválido. Use HH:MM (24h).")
+
+    # 3. Validar disponibilidad de la sala y cruces
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    # Verificar si la sala ya está ocupada en ese horario
+    query_cruce = """
+        SELECT id FROM reservas 
+        WHERE sala_id = ? AND fecha = ? AND estado = 'activa'
+        AND ((hora_inicio < ? AND hora_fin > ?) OR (hora_inicio >= ? AND hora_inicio < ?))
+    """
+    cursor.execute(query_cruce, (sala_id, fecha, hora_fin, hora_inicio, hora_inicio, hora_fin))
+    if cursor.fetchone():
+        conn.close()
+        raise ValueError("La sala ya tiene una reserva activa en este horario.")
+
+    # ... proceder con el INSERT
     """Inserta una nueva reserva. Valida solapamiento de horarios.
 
     Retorna el id asignado si tiene éxito.
@@ -196,6 +283,7 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
 
     conn   = obtener_conexion()
     cursor = conn.cursor()
+    actualizar_estado_salas_y_reservas()
 
     # Verificar solapamiento en la misma sala y fecha
     cursor.execute(
@@ -227,6 +315,8 @@ def crear_reserva(sala_id: int, sala_nombre: str, sala_codigo: str,
     conn.close()
     return nuevo_id
 
+    
+
 
 def cancelar_reserva(reserva_id: int):
     """Cambia el estado de una reserva a 'cancelada'."""
@@ -244,13 +334,18 @@ def cancelar_reserva(reserva_id: int):
 
 # ── CONSULTA 1: Todas las salas ──────────────────────────────
 def obtener_todas_las_salas():
-    """Retorna la lista completa de salas registradas."""
+    
+    """Retorna la lista de salas, asegurando que el estado esté al día."""
+    # LLAMADA CRÍTICA: Actualiza antes de consultar
+    actualizar_estado_salas_y_reservas() 
+    
     conn   = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM salas ORDER BY id")
     filas  = [dict(f) for f in cursor.fetchall()]
     conn.close()
     return filas
+
 
 
 # ── CONSULTA 2: Sala por código ──────────────────────────────
@@ -270,7 +365,9 @@ def obtener_sala_por_codigo(codigo: str):
 
 # ── CONSULTA 3: Salas disponibles ────────────────────────────
 def obtener_salas_disponibles():
-    """Retorna solo las salas con disponible = 1."""
+    """Retorna solo las salas que no tienen reservas en curso ahora mismo."""
+    actualizar_estado_salas_y_reservas()
+    
     conn   = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM salas WHERE disponible = 1 ORDER BY id")
