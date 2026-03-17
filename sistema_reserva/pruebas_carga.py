@@ -130,3 +130,49 @@ class TestBusquedaYFiltros(unittest.TestCase):
         """Filtrar por tipo 'laboratorio' debe retornar 0 salas."""
         r = filtrar_por_tipo("laboratorio")
         self.assertEqual(len(r), 0)
+# ════════════════════════════════════════════════════════════
+# BLOQUE 4 — Estadísticas
+# ════════════════════════════════════════════════════════════
+class TestEstadisticas(unittest.TestCase):
+
+    def test_16_estadisticas_son_coherentes(self):
+        """total = disponibles + ocupadas, y valores correctos."""
+        stats = obtener_estadisticas()
+        self.assertEqual(stats["total"],        3)
+        self.assertEqual(stats["disponibles"],  2)
+        self.assertEqual(stats["ocupadas"],     1)
+        self.assertEqual(
+            stats["total"],
+            stats["disponibles"] + stats["ocupadas"],
+            "total no coincide con disponibles + ocupadas"
+        )
+
+
+# ════════════════════════════════════════════════════════════
+# PUNTO DE ENTRADA
+# ════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    loader = unittest.TestLoader()
+    suite  = unittest.TestSuite()
+
+    for cls in [
+        TestCargaBaseDeDatos,
+        TestConsultasEspecificas,
+        TestBusquedaYFiltros,
+        TestEstadisticas,
+    ]:
+        suite.addTests(loader.loadTestsFromTestCase(cls))
+
+    runner    = unittest.TextTestRunner(verbosity=2)
+    resultado = runner.run(suite)
+
+    total  = resultado.testsRun
+    fallos = len(resultado.failures) + len(resultado.errors)
+
+    print(f"\n{'═' * 52}")
+    print(f"  RESULTADO FINAL : {total - fallos}/{total} pruebas pasadas")
+    if fallos == 0:
+        print("  🎉 ¡Todas las pruebas pasaron correctamente!")
+    else:
+        print(f"  ⚠️  {fallos} prueba(s) FALLIDA(S) — revisar errores arriba")
+    print(f"{'═' * 52}\n")
