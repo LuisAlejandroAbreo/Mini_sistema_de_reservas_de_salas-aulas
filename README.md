@@ -1,10 +1,10 @@
-# Mini Sistema de Reservas de Salas/Aulas
+# 📚 Mini Sistema de Reservas de Salas/Aulas
 
-## Propósito del Proyecto
+## 🎯 Propósito del Proyecto
 
 El propósito principal del programa es permitir **la gestión básica de reservas de salas y aulas de forma clara y centralizada**, asegurando que no existan conflictos de horario en una misma sala.
 
-## Tecnologías utilizadas
+## 🛠️ Tecnologías utilizadas
 - Python
 - Tkinter
 - SQLite3
@@ -12,8 +12,10 @@ El propósito principal del programa es permitir **la gestión básica de reserv
 - Calendar
 - Meet
 - Git
-## Instrucciones de instalación y ejecución
-### Instrucción de instalación
+
+## ⚙️ Instrucciones de instalación y ejecución
+
+### 📥 Instrucción de instalación
 
 - Debe ingresar el siguiente comando en la terminal para acceder al repositorio
 
@@ -21,13 +23,14 @@ El propósito principal del programa es permitir **la gestión básica de reserv
 git clone https://github.com/LuisAlejandroAbreo/
 ```
 
-### Ejecución del programa
+### ▶️ Ejecución del programa
 - Una vez accedido al repositorio ejecute en la terminal el siguiente comando: 
-```
- python3 sistema_reserva/main.py
-```
-## Estructura principal del repositorio
 
+```
+python3 sistema_reserva/main.py
+```
+
+## 🗂️ Estructura principal del repositorio
 
 ```bash
 Mini_sistema_de_reservas_de_salas_aulas/
@@ -62,17 +65,16 @@ Mini_sistema_de_reservas_de_salas_aulas/
 │
 └── README.md
 ```
-## Miembros del equipo y roles principales
-- (DEV) Juan Sebastian Jaimes Rolon
 
-- (DEV) Jesús Sleyder Sánchez Acevedo
-
-- (SM) Luis Alejandro Abreo Carrillo
-
-- (PO) Juan José Gonzalez Rosales
+## 👥 Miembros del equipo y roles principales
+- 👨‍💻 (DEV) Juan Sebastian Jaimes Rolon  
+- 👨‍💻 (DEV) Jesús Sleyder Sánchez Acevedo  
+- 🧭 (SM) Luis Alejandro Abreo Carrillo  
+- 📌 (PO) Juan José Gonzalez Rosales  
 
 ---
-## Descripción del Proyecto
+
+## 📝 Descripción del Proyecto
 
 El **Mini Sistema de Reservas de Salas/Aulas** es una aplicación diseñada para gestionar de manera simple y centralizada la reserva de espacios dentro de una institución educativa.
 
@@ -82,22 +84,22 @@ El proyecto se desarrolla como parte de un ejercicio académico utilizando la me
 
 ---
 
-## Alcance del Proyecto (MVP)
+## 🎯 Alcance del Proyecto (MVP)
 
 Este proyecto implementa un **mini sistema funcional**, por lo que se establecen las siguientes simplificaciones:
 
-- El sistema es utilizado por **una sola persona a la vez**
-- **No existe autenticación ni sistema de usuarios**
-- La identificación del responsable de la reserva se realiza mediante un **nombre, grupo o curso**
+- 👤 El sistema es utilizado por **una sola persona a la vez**
+- 🔒 **No existe autenticación ni sistema de usuarios**
+- 🏷️ La identificación del responsable de la reserva se realiza mediante un **nombre, grupo o curso**
 
-El proposito del proyecto es realizar un producto minumo viable (MVP) al finalizar el primer sprint.
+El propósito del proyecto es realizar un producto mínimo viable (MVP) al finalizar el primer sprint.
 
 ---
 
-## Funcionalidades Principales
+## 🚀 Funcionalidades Principales
 
-- Registrar nuevas reservas
-- Consultar reservas por fecha
-- Visualizar el detalle de una reserva
-- Cancelar reservas existentes
-- Modificar reservas antes de que ocurran
+- ➕ Registrar nuevas reservas  
+- 📅 Consultar reservas por fecha  
+- 🔍 Visualizar el detalle de una reserva  
+- ❌ Cancelar reservas existentes  
+- ✏️ Modificar reservas antes de que ocurran  
