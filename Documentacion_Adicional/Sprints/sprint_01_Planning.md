@@ -4,7 +4,7 @@
 * 🕒 **Fecha de inicio:** 13 de marzo 2026
 * 🕓 **Fecha de finalización:** 18 de marzo 2026
 * ⏳ **Duración:** 5 días
-* 🚩 **Prioridad:** 1, 2 y 3
+* 🚩 **Prioridad:** 1, 2, 3 y 7
 
 ---
 
