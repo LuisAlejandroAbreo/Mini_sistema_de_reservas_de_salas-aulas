@@ -1,6 +1,6 @@
-# Sprint Daily - Día 3
+# **Sprint Daily - Día 3**
 
-## Detalles del Sprint Daily - Día 3
+## **Detalles del Sprint Daily - Día 3**
 * **Fecha de inicio:** 17 de marzo 2026, 4:45 PM
 * **Fecha de finalización:** 17 de marzo 2026, 5:00 PM
 * **Duración:** 15 Minutos
@@ -9,7 +9,7 @@
  
 ---
 
-## Evaluación del Daily
+## **Evaluación del Daily**
 | DIa | Miembro | ¿Que hice ayer? | ¿Que haré hoy? | Impedimentos |
 | :--- | :--- | :--- | :--- | :--- |
 | 2 | Dev. (Sebastián) | Termina de programar su parte, con la correcta verificacion del codigo | Estara al tanto del avance del proyecto en el dia final | Ninguno
@@ -19,7 +19,7 @@
 
 ---
 
-## Scrum Table Progress
+## **Scrum Table Progress**
 
 | DEV | To Do | In Progress | In Review | Done |
 | :--- | :--- | :--- | :--- |:--- |
@@ -28,10 +28,6 @@
 | Sebastian | _**✓**_ | _**✓**_|_**✓**_| Listado de salas registradas| 
 | Sebastian | _**✓**_ |_**✓**_ |_**✓**_ | Mostrar nombre o código de sala|
 | Sebastian | _**✓**_ | _**✓**_|_**✓**_ | Pruebas de carga al iniciar sistema|
- --- 
-
-| DEV | To Do | In Progress | In Review | Done |
-| :--- | :--- | :--- | :--- |:--- |
 | Jesus | _**✓**_ | _**✓**_ |Crear consulta a base de dato| |
 | Jesus  | _**✓**_ | _**✓**_ |Diseñar interfaz de visualización | |
 | Jesus  | _**✓**_ | _**✓**_|Crear funcion para obtener reservas por fecha|| 
@@ -39,10 +35,6 @@
 | Jesus | Ordenar reservas por hora de inicio|||| |
 | Jesus | Mostrar lista de reservas| || |
 | Jesus | Mostrar informacion de cada reserva || | |
- --- 
-
- | DEV | To Do | In Progress | In Review | Done |
-| :--- | :--- | :--- | :--- |:--- |
 | Luis| _**✓**_  | _**✓**_ |Diseñar formulario de reserva| |
 | Luis  | _**✓**_ | Validación de campos obligatorios | | |
 | Luis  | _**✓**_ | _**✓**_|Implementar lógica de verificación de disponibilidad|| 

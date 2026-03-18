@@ -1,7 +1,7 @@
 
-# Sprint Daily - Día 2
+# **Sprint Daily - Día 2**
 
-## Detalles del Sprint Daily - Día 2
+## **Detalles del Sprint Daily - Día 2**
 * **Fecha de inicio:** 16 de marzo 2026, 4:00 PM
 * **Fecha de finalización:** 16 de marzo 2026, 4:15 PM
 * **Duración:** 15 Minutos
@@ -10,7 +10,7 @@
  
 ---
 
-## Evaluación del Daily
+## **Evaluación del Daily**
 | DIa | Miembro | ¿Que hice ayer? | ¿Que haré hoy? | Impedimentos |
 | :--- | :--- | :--- | :--- | :--- |
 | 2 | Dev. (Sebastián) | Resuelve todas las tareas asignadas y deja paso a la correcta implementacion de las mismas | Correcion de errores y ajustes minimos necesarios | Codigo redundante, solucionado y optimizado
@@ -19,7 +19,7 @@
 
 ---
 
-## Scrum Table Progress
+## **Scrum Table Progress**
 
 | DEV | To Do | In Progress | In Review | Done |
 | :--- | :--- | :--- | :--- |:--- |

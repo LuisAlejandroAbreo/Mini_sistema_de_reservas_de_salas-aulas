@@ -1,7 +1,7 @@
 
-# Sprint Daily - Día 1
+# **Sprint Daily - Día 1**
 
-## Detalles del Sprint Daily - Día 1
+## **Detalles del Sprint Daily - Día 1**
 * **Fecha de inicio:** 15 de marzo 2026, 8:00 PM
 * **Fecha de finalización:** 15 de marzo 2026, 8:15 PM
 * **Duración:** 15 Minutos
@@ -10,7 +10,7 @@
  
 ---
 
-## Evaluación del Daily
+## **Evaluación del Daily**
 | DIa | Miembro | ¿Que hice ayer? | ¿Que haré hoy? | Impedimentos |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Dev. (Sebastián) | Crear consulta a base de datos, con una demo que ejemplifica el uso e implementación en el sistema | Diseñar interfaz de visualización, con el fin de obtener la base del sistema | Código no familiarizado, pero resuelto con base en la ejecución e investigación del mismo 
@@ -19,7 +19,7 @@
 
 ---
 
-## Scrum Table Progress
+## **Scrum Table Progress**
 
 | DEV | To Do | In Progress | In Review | Done |
 | :--- | :--- | :--- | :--- |:--- |
