@@ -22,6 +22,7 @@
 | **HU1** - Ver salas disponibles | Base del sistema para visualizar salas |
 | **HU2** - Consultar reserva | Base del sistema para visualizar reservas |
 | **HU3** - Crear reserva | Base del sistema para reserva de sala |
+| **HU7** - Registrar una nueva sala | Ampliar la oferta de espacios disponibles en el sistema |
 
 ---
 
@@ -35,6 +36,12 @@
 | Listado de salas registradas | Dev. (Sebastián) | To Do |
 | Mostrar nombre o código de sala | Dev. (Sebastián) | To Do |
 | Pruebas de carga al iniciar sistema | Dev. (Sebastián) | To Do |
+
+### 🏷️ **HU7 – Registrar una nueva sala**
+| 🛠️ Tarea | 👤 Responsable | 🚥 Estado |
+| :--- | :--- | :--- |
+| Diseño del formulario | Dev. (Sebastián) | To Do |
+| Validar que no haya otra sala existente con los mismos datos | Dev. (Sebastián) | To Do |
 
 ### 🔍 **HU2 – Consultar historial de reserva**
 | 🛠️ Tarea | 👤 Responsable | 🚥 Estado |
