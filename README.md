@@ -6,7 +6,7 @@
 
 - Luis Alejandro Abreo Carrillo
 
-- Andres David Florez Sanchez
+- Jesús Sleyder Sánchez Acevedo
 
 - Juan José Gonzalez Rosales
 
