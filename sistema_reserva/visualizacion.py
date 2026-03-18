@@ -1721,7 +1721,7 @@ class VentanaPrincipal(tk.Tk):
                  bg=C["bg_card"], fg=C["text_2"], anchor="w").pack(anchor="w", pady=(10, 3))
 
         # Generar horas exactas 06:00 → 22:00
-        HORAS = [f"{h:02d}:00" for h in range(6, 23)]
+        HORAS = [f"{h:02d}:00" for h in range(6, 21)]
 
         fila_hora = tk.Frame(inner, bg=C["bg_card"])
         fila_hora.pack(fill="x", pady=(0, 2))
