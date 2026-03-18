@@ -582,55 +582,304 @@ class VentanaPrincipal(tk.Tk):
 
     # ── Toolbar Reservas ──────────────────────────────────────
     def _construir_toolbar_reservas(self, parent):
+        import datetime as _dt
+        import calendar as _cal
+
         bar = tk.Frame(parent, bg=C["bg_content"])
         bar.pack(fill="x")
 
-        sw = tk.Frame(bar, bg=C["bg_card"],
-                      highlightbackground=C["border"], highlightthickness=1)
-        sw.pack(side="left", fill="x", expand=True, padx=(0, 12))
+        # Estado de filtros
+        self._filtro_sala_sel  = None
+        self._filtro_fecha_sel = None
 
-        tk.Label(sw, text="🔍", font=("Segoe UI", 11),
-                 bg=C["bg_card"], fg=C["text_3"], padx=10).pack(side="left")
+        # ── Fila izquierda: botones dropdown ──────────────
+        izq = tk.Frame(bar, bg=C["bg_content"])
+        izq.pack(side="left")
 
-        self.var_busqueda_res = tk.StringVar()
-        self._ph_res = "Buscar por sala, responsable o fecha…"
-        self.entry_res = tk.Entry(
-            sw, textvariable=self.var_busqueda_res,
-            font=F_BODY, bd=0, relief="flat",
-            bg=C["bg_card"], fg=C["text_1"],
-            insertbackground=C["primary"])
-        self.entry_res.pack(side="left", fill="both", expand=True, pady=11, padx=(0, 8))
-        self._ph_res_set()
-        self.entry_res.bind("<FocusIn>",  self._ph_res_clear)
-        self.entry_res.bind("<FocusOut>", self._ph_res_restore)
-        self.var_busqueda_res.trace_add("write", self._on_busqueda_reservas)
+        # ──────────────────────────────────────────────────
+        # DROPDOWN 1 — Sala
+        # ──────────────────────────────────────────────────
+        wrap_sala = tk.Frame(izq, bg=C["bg_content"])
+        wrap_sala.pack(side="left", padx=(0, 8))
 
-        btn_clear = tk.Label(sw, text=" x ", font=F_SMALL,
-                             bg=C["bg_card"], fg=C["text_3"], cursor="hand2", padx=6)
-        btn_clear.pack(side="right")
-        btn_clear.bind("<Button-1>", self._limpiar_busqueda_reservas)
+        self._btn_sala = tk.Label(
+            wrap_sala, text="  🚪  Sala: Todas  ▾  ",
+            font=F_SMALL, cursor="hand2",
+            bg=C["bg_card"], fg=C["text_2"],
+            highlightbackground=C["border"], highlightthickness=1,
+            pady=9, padx=6)
+        self._btn_sala.pack()
 
-        # Filtros de estado
+        # Panel sala (oculto, se posiciona con place sobre _frame_reservas)
+        self._panel_sala = tk.Frame(
+            self._frame_reservas,
+            bg=C["bg_card"],
+            highlightbackground=C["border"], highlightthickness=1)
+
+        # Cabecera del panel sala
+        hdr_s = tk.Frame(self._panel_sala, bg=C["bg_sidebar"], pady=8)
+        hdr_s.pack(fill="x")
+        tk.Label(hdr_s, text="  Filtrar por sala",
+                 font=("Segoe UI", 9, "bold"),
+                 bg=C["bg_sidebar"], fg="white").pack(side="left")
+
+        self._lista_sala = tk.Frame(self._panel_sala, bg=C["bg_card"])
+        self._lista_sala.pack(fill="both", padx=2, pady=4)
+
+        def _poblar_sala():
+            for w in self._lista_sala.winfo_children():
+                w.destroy()
+            salas   = obtener_todas_las_salas()
+            opciones = [("Todas las salas", None)] + \
+                       [(s["nombre"], s["nombre"]) for s in salas]
+            for txt, val in opciones:
+                activo = (self._filtro_sala_sel == val)
+                bg_i = C["primary_glow"] if activo else C["bg_card"]
+                fg_i = C["primary_text"] if activo else C["text_1"]
+                prefijo = "✔  " if activo else "    "
+                row_s = tk.Label(
+                    self._lista_sala,
+                    text=f"  {prefijo}{txt}",
+                    font=("Segoe UI", 9), bg=bg_i, fg=fg_i,
+                    anchor="w", cursor="hand2", pady=8)
+                row_s.pack(fill="x")
+
+                def _click_sala(e, v=val, t=txt):
+                    self._filtro_sala_sel = v
+                    etiq = f"  🚪  {t[:20]}  ▾  " if v else "  🚪  Sala: Todas  ▾  "
+                    self._btn_sala.config(
+                        text=etiq,
+                        bg=C["primary_glow"] if v else C["bg_card"],
+                        fg=C["primary_text"] if v else C["text_2"])
+                    self._cerrar_dropdowns()
+                    self._aplicar_filtros_res()
+
+                row_s.bind("<Button-1>", _click_sala)
+                row_s.bind("<Enter>",  lambda e, r=row_s: r.config(bg=C["border"]))
+                row_s.bind("<Leave>",
+                           lambda e, r=row_s, bg=bg_i: r.config(bg=bg))
+
+        def _toggle_sala(e=None):
+            if self._panel_sala.winfo_ismapped():
+                self._cerrar_dropdowns()
+                return
+            self._cerrar_dropdowns()
+            _poblar_sala()
+            # Posicionar bajo el botón
+            self._btn_sala.update_idletasks()
+            self._frame_reservas.update_idletasks()
+            bx = self._btn_sala.winfo_rootx() - \
+                 self._frame_reservas.winfo_rootx()
+            by = self._btn_sala.winfo_rooty() - \
+                 self._frame_reservas.winfo_rooty() + \
+                 self._btn_sala.winfo_height()
+            n_items = len(obtener_todas_las_salas()) + 1
+            alto    = min(n_items, 8) * 40 + 44   # filas + cabecera
+            ancho   = max(self._btn_sala.winfo_width(), 230)
+            self._panel_sala.place(x=bx, y=by, width=ancho, height=alto)
+            self._panel_sala.lift()
+
+        self._btn_sala.bind("<Button-1>", _toggle_sala)
+
+        # ──────────────────────────────────────────────────
+        # DROPDOWN 2 — Fecha (calendario)
+        # ──────────────────────────────────────────────────
+        wrap_fecha = tk.Frame(izq, bg=C["bg_content"])
+        wrap_fecha.pack(side="left")
+
+        self._btn_fecha = tk.Label(
+            wrap_fecha, text="  📅  Fecha: Todas  ▾  ",
+            font=F_SMALL, cursor="hand2",
+            bg=C["bg_card"], fg=C["text_2"],
+            highlightbackground=C["border"], highlightthickness=1,
+            pady=9, padx=6)
+        self._btn_fecha.pack()
+
+        # Panel fecha (oculto, place sobre _frame_reservas)
+        self._panel_fecha = tk.Frame(
+            self._frame_reservas,
+            bg=C["bg_card"],
+            highlightbackground=C["border"], highlightthickness=1)
+
+        _hoy   = _dt.date.today()
+        _cal_y = [_hoy.year]
+        _cal_m = [_hoy.month]
+
+        # Cabecera navegación mes
+        nav_f = tk.Frame(self._panel_fecha, bg=C["primary"])
+        nav_f.pack(fill="x")
+
+        lbl_mes = tk.Label(nav_f, text="", font=("Segoe UI", 9, "bold"),
+                           bg=C["primary"], fg="white")
+        lbl_mes.pack(side="left", expand=True, pady=6)
+
+        # Botones ◀ ▶
+        for sym, delta in [("◀", -1), ("▶", 1)]:
+            sd = "left" if sym == "◀" else "right"
+            b  = tk.Label(nav_f, text=sym, font=("Segoe UI", 10, "bold"),
+                          bg=C["primary"], fg="white",
+                          cursor="hand2", padx=10, pady=6)
+            b.pack(side=sd)
+            def _nav(e, dv=delta):
+                m = _cal_m[0] + dv
+                y = _cal_y[0]
+                if m < 1:  m = 12; y -= 1
+                if m > 12: m = 1;  y += 1
+                _cal_m[0] = m; _cal_y[0] = y
+                _render_cal()
+            b.bind("<Button-1>", _nav)
+            b.bind("<Enter>", lambda e, lb=b: lb.config(bg=C["primary_dark"]))
+            b.bind("<Leave>", lambda e, lb=b: lb.config(bg=C["primary"]))
+
+        # Grid días
+        grid_c = tk.Frame(self._panel_fecha, bg=C["bg_card"])
+        grid_c.pack(padx=6, pady=4)
+
+        for ci, d in enumerate(["Lu","Ma","Mi","Ju","Vi","Sa","Do"]):
+            tk.Label(grid_c, text=d, font=("Segoe UI", 8, "bold"),
+                     bg=C["bg_card"], fg=C["text_3"],
+                     width=4).grid(row=0, column=ci, pady=(2, 3))
+
+        _celdas = {}
+        for ri in range(1, 7):
+            for ci in range(7):
+                c = tk.Label(grid_c, text="", font=("Segoe UI", 9),
+                             bg=C["bg_card"], fg=C["text_1"], width=4, pady=4)
+                c.grid(row=ri, column=ci, padx=1)
+                _celdas[(ri, ci)] = c
+
+        # Botón limpiar
+        btn_limp = tk.Label(
+            self._panel_fecha,
+            text="  ✕  Limpiar filtro de fecha",
+            font=("Segoe UI", 8), bg=C["bg_content"],
+            fg=C["text_2"], cursor="hand2", pady=7, anchor="w")
+        btn_limp.pack(fill="x", padx=6, pady=(0, 4))
+
+        def _limpiar_fecha(e=None):
+            self._filtro_fecha_sel = None
+            self._btn_fecha.config(
+                text="  📅  Fecha: Todas  ▾  ",
+                bg=C["bg_card"], fg=C["text_2"])
+            self._cerrar_dropdowns()
+            self._aplicar_filtros_res()
+
+        btn_limp.bind("<Button-1>", _limpiar_fecha)
+        btn_limp.bind("<Enter>", lambda e: btn_limp.config(bg=C["border"]))
+        btn_limp.bind("<Leave>", lambda e: btn_limp.config(bg=C["bg_content"]))
+
+        MESES_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+        def _render_cal():
+            lbl_mes.config(
+                text=f"  {MESES_ES[_cal_m[0]-1]}  {_cal_y[0]}  ")
+            for c in _celdas.values():
+                c.config(text="", bg=C["bg_card"], cursor="arrow")
+                c.unbind("<Button-1>"); c.unbind("<Enter>"); c.unbind("<Leave>")
+
+            for ri, semana in enumerate(
+                    _cal.monthcalendar(_cal_y[0], _cal_m[0]), 1):
+                for ci, dia in enumerate(semana):
+                    if dia == 0:
+                        continue
+                    fecha = _dt.date(_cal_y[0], _cal_m[0], dia)
+                    celda = _celdas[(ri, ci)]
+                    es_sel = (self._filtro_fecha_sel == fecha)
+                    es_hoy = (fecha == _hoy)
+
+                    if es_sel:
+                        bg_d, fg_d = C["primary"], "white"
+                    elif es_hoy:
+                        bg_d, fg_d = C["primary_glow"], C["primary_text"]
+                    else:
+                        bg_d, fg_d = C["bg_card"], C["text_1"]
+
+                    celda.config(text=str(dia), bg=bg_d, fg=fg_d,
+                                 cursor="hand2")
+
+                    def _pick(e, f=fecha):
+                        self._filtro_fecha_sel = f
+                        self._btn_fecha.config(
+                            text=f"  📅  {f.strftime('%d/%m/%Y')}  ▾  ",
+                            bg=C["primary_glow"], fg=C["primary_text"])
+                        self._cerrar_dropdowns()
+                        self._aplicar_filtros_res()
+
+                    celda.bind("<Button-1>", _pick)
+                    celda.bind("<Enter>",
+                               lambda e, c=celda, bg=bg_d: c.config(bg=C["border"]))
+                    celda.bind("<Leave>",
+                               lambda e, c=celda, bg=bg_d: c.config(bg=bg))
+
+        def _toggle_fecha(e=None):
+            if self._panel_fecha.winfo_ismapped():
+                self._cerrar_dropdowns()
+                return
+            self._cerrar_dropdowns()
+            _render_cal()
+            self._btn_fecha.update_idletasks()
+            self._frame_reservas.update_idletasks()
+            bx = self._btn_fecha.winfo_rootx() - \
+                 self._frame_reservas.winfo_rootx()
+            by = self._btn_fecha.winfo_rooty() - \
+                 self._frame_reservas.winfo_rooty() + \
+                 self._btn_fecha.winfo_height()
+            self._panel_fecha.place(x=bx, y=by, width=295, height=310)
+            self._panel_fecha.lift()
+
+        self._btn_fecha.bind("<Button-1>", _toggle_fecha)
+
+        # ── Filtros de estado (derecha) ───────────────────
         fw = tk.Frame(bar, bg=C["bg_card"],
                       highlightbackground=C["border"], highlightthickness=1)
-        fw.pack(side="left")
+        fw.pack(side="right", padx=(10, 0))
         self._rfiltro_btns = {}
         for label, valor in [("Todas", "todas"), ("Activas", "activa"),
-                              ("Canceladas", "cancelada"), ("Finalizadas", "finalizada")]:
-            btn = tk.Label(fw, text=label, font=F_SMALL, padx=14, pady=11, cursor="hand2")
+                              ("Canceladas", "cancelada"),
+                              ("Finalizadas", "finalizada")]:
+            btn = tk.Label(fw, text=label, font=F_SMALL,
+                           padx=14, pady=11, cursor="hand2")
             btn.pack(side="left")
             self._rfiltro_btns[valor] = btn
             btn.bind("<Button-1>", lambda e, v=valor: self._set_rfiltro(v))
         self._refrescar_rfiltro_ui()
 
         self.lbl_conteo_res = tk.Label(
-            bar, text="", font=F_SMALL, bg=C["bg_content"], fg=C["text_3"])
-        self.lbl_conteo_res.pack(side="right")
+            bar, text="", font=F_SMALL,
+            bg=C["bg_content"], fg=C["text_3"])
+        self.lbl_conteo_res.pack(side="right", padx=(0, 10))
+
+    def _cerrar_dropdowns(self):
+        """Oculta ambos paneles desplegables."""
+        try:
+            self._panel_sala.place_forget()
+        except Exception:
+            pass
+        try:
+            self._panel_fecha.place_forget()
+        except Exception:
+            pass
+
+    def _aplicar_filtros_res(self):
+        """Filtra la tabla de reservas combinando sala + fecha + estado."""
+        todas = obtener_todas_las_reservas()
+        estado = self._rfiltro_activo
+        if estado != "todas":
+            todas = [r for r in todas if r.get("estado") == estado]
+        if self._filtro_sala_sel:
+            todas = [r for r in todas
+                     if r.get("sala_nombre") == self._filtro_sala_sel]
+        if self._filtro_fecha_sel:
+            fecha_str = str(self._filtro_fecha_sel)
+            todas = [r for r in todas if r.get("fecha") == fecha_str]
+        self._cargar_reservas(todas)
 
     def _set_rfiltro(self, valor):
+        self._cerrar_dropdowns()
         self._rfiltro_activo = valor
         self._refrescar_rfiltro_ui()
-        self._on_rfiltro()
+        self._aplicar_filtros_res()
 
     def _refrescar_rfiltro_ui(self):
         for v, btn in self._rfiltro_btns.items():
@@ -640,37 +889,7 @@ class VentanaPrincipal(tk.Tk):
                 btn.config(bg=C["bg_card"], fg=C["text_2"])
 
     def _on_rfiltro(self):
-        f = self._rfiltro_activo
-        if f == "todas":
-            self._cargar_reservas(obtener_todas_las_reservas())
-        else:
-            self._cargar_reservas(filtrar_reservas_por_estado(f))
-
-    def _on_busqueda_reservas(self, *_):
-        t = self.var_busqueda_res.get()
-        if t in ("", self._ph_res):
-            self._on_rfiltro()
-            return
-        self._cargar_reservas(buscar_reservas(t))
-
-    def _limpiar_busqueda_reservas(self, _=None):
-        self.var_busqueda_res.set("")
-        self._ph_res_set()
-        self._on_rfiltro()
-
-    def _ph_res_set(self):
-        self.entry_res.delete(0, "end")
-        self.entry_res.insert(0, self._ph_res)
-        self.entry_res.config(fg=C["text_3"])
-
-    def _ph_res_clear(self, _=None):
-        if self.entry_res.get() == self._ph_res:
-            self.entry_res.delete(0, "end")
-            self.entry_res.config(fg=C["text_1"])
-
-    def _ph_res_restore(self, _=None):
-        if not self.entry_res.get():
-            self._ph_res_set()
+        self._aplicar_filtros_res()
 
     # ── Tabla Reservas ────────────────────────────────────────
     def _construir_tabla_reservas(self, parent):
