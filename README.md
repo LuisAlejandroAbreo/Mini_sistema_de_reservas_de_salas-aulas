@@ -1,14 +1,75 @@
 # Mini Sistema de Reservas de Salas/Aulas
 
-## Autores
+## Propósito del Proyecto
 
-- Juan Sebastian Jaimes Rolon
+El propósito principal del programa es permitir **la gestión básica de reservas de salas y aulas de forma clara y centralizada**, asegurando que no existan conflictos de horario en una misma sala.
 
-- Luis Alejandro Abreo Carrillo
+## Tecnologías utilizadas
+- Python
+- Tkinter
+- SQLite3
+- GitHub
+- Calendar
+- Meet
+- Git
+## Instrucciones de instalación y ejecución
+### Instrucción de instalación
 
-- Jesús Sleyder Sánchez Acevedo
+- Debe ingresar el siguiente comando en la terminal para acceder al repositorio
 
-- Juan José Gonzalez Rosales
+```bash
+git clone https://github.com/LuisAlejandroAbreo/
+```
+
+### Ejecución del programa
+- Una vez accedido al repositorio ejecute en la terminal el siguiente comando: 
+```
+ python3 sistema_reserva/main.py
+```
+## Estructura principal del repositorio
+
+
+```bash
+Mini_sistema_de_reservas_de_salas_aulas/
+│
+├── 📁 Analisis/
+│   ├── productBacklog.md
+│   └── resumenProblema.md
+│
+├── 📁 sistema_reserva/
+│   ├── consulta.py
+│   ├── main.py
+│   ├── mostrar_sala.py
+│   ├── pruebas_carga.py
+│   ├── reservas.db
+│   └── visualizacion.py
+│
+├── 📁 Situacion/
+│   ├── 2026 Grupo C3 - Instrucciones actividad equipos scrum.docx
+│   └── 2026 Grupo C3 - SCRUM - Proyecto Mini reservas/aulas
+│
+├── 📁 Sprints/
+│   ├── daily_01.png
+│   ├── daily_02.png
+│   ├── daily_03.png
+│   ├── daily_04.png
+│   ├── sprint_01_Daily_01.md
+│   ├── sprint_01_Daily_02.md
+│   ├── sprint_01_Daily_03.md
+│   ├── sprint_01_Daily_04.md
+│   ├── sprint_01_Planning.md
+│   └── sprint_retrospective.md
+│
+└── README.md
+```
+## Miembros del equipo y roles principales
+- (DEV) Juan Sebastian Jaimes Rolon
+
+- (DEV) Jesús Sleyder Sánchez Acevedo
+
+- (SM) Luis Alejandro Abreo Carrillo
+
+- (PO) Juan José Gonzalez Rosales
 
 ---
 ## Descripción del Proyecto
@@ -18,12 +79,6 @@ El **Mini Sistema de Reservas de Salas/Aulas** es una aplicación diseñada para
 El sistema permite consultar la disponibilidad de salas y registrar reservas para actividades académicas o administrativas, evitando conflictos de horario y facilitando la planificación de clases, talleres y reuniones.
 
 El proyecto se desarrolla como parte de un ejercicio académico utilizando la metodología **SCRUM** y se enfoca en la implementación de un **Producto Mínimo Viable (MVP)** en un sprint corto de desarrollo.
-
----
-
-## Objetivos del Sistema
-
-El sistema tiene como objetivo principal permitir **la gestión básica de reservas de salas y aulas de forma clara y centralizada**, Asegurando que no existan conflictos de horario en una misma sala.
 
 ---
 
