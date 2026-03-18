@@ -12,7 +12,7 @@
 ## 📊 **Evaluación del Daily**
 | ☀️Día | 👤 Miembro | ⏪¿Que hice ayer? | ⏩¿Que haré hoy? | 🚫Impedimentos |
 | :--- | :--- | :--- | :--- | :--- |
-| 3 | Dev. (Sebastián) | Termina de programar su parte, con la correcta verificacion del codigo | Estara al tanto del avance del proyecto en el dia final | Ninguno
+| 3 | Dev. (Sebastián) | Terminar las tareas correspondientes a la HU-07 , con la correcta verificacion del codigo | Estara al tanto del avance del proyecto en el dia final | Ninguno
 | 3 | Dev. (Jesus) | Trabajar en las tareas 1,2 y 3 del HU-02  | Tareas finales del HU-02 con validaciones necesarias | Inconvenientes menores
 | 3 | SM. (Luis) | Implementacion de las tareas 1, 3 y 5 del HU-03 respectivas | Terminar de revisar las tareas recaladas en revision, y los HU-03 finales | Implementacion de los requerimientos, pero resuelto con indagacion
 | 3 | PO. (Juan) | Revision del avance de los compañeros  | Documentacion y revision del proyecto final en Sprint Review | Problemas familiares
@@ -28,6 +28,8 @@
 | Sebastian | _**✓**_ | _**✓**_|_**✓**_| Listado de salas registradas| 
 | Sebastian | _**✓**_ |_**✓**_ |_**✓**_ | Mostrar nombre o código de sala|
 | Sebastian | _**✓**_ | _**✓**_|_**✓**_ | Pruebas de carga al iniciar sistema|
+| Sebastian | _**✓**_ | _**✓**_ | _**✓**_ | Diseño del formulario|
+| Sebastian | _**✓**_ |  _**✓**_ | Validar que no haya otra sala|
 | Jesus | _**✓**_ | _**✓**_ |Crear consulta a base de dato| |
 | Jesus  | _**✓**_ | _**✓**_ |Diseñar interfaz de visualización | |
 | Jesus  | _**✓**_ | _**✓**_|Crear funcion para obtener reservas por fecha|| 

@@ -27,6 +27,8 @@
 | Sebastian | _**✓**_ | _**✓**_ | Listado de salas registradas | | 
 | Sebastian | _**✓**_ | _**✓**_ | Mostrar nombre o código de sala | |
 | Sebastian | _**✓**_ | _**✓**_ | Pruebas de carga al iniciar sistema | |
+| Sebastian | _**✓**_ | Diseño del formulario | | |
+| Sebastian | _**✓**_ | Validar que no haya otra sala existente con los mismos datos | | |
 
 --- 
 ![alt text](daily_02.png)
