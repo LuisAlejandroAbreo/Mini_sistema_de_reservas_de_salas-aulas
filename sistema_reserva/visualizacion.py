@@ -1822,10 +1822,12 @@ class VentanaPrincipal(tk.Tk):
                 )
                 self._construir_kpis_reservas()
                 self._on_rfiltro()
-                lbl_msg.config(
-                    text=f"Reserva creada correctamente para '{sala['nombre']}'.",
-                    fg=C["green"])
-                modal.after(1500, modal.destroy)
+                modal.destroy()
+                self._mostrar_confirmacion_reserva(
+                    sala=sala, fecha=fecha,
+                    inicio=inicio, fin=fin,
+                    resp=resp, desc=desc,
+                )
             except ValueError as err:
                 lbl_msg.config(text=str(err), fg=C["red"])
 
@@ -1848,6 +1850,116 @@ class VentanaPrincipal(tk.Tk):
         btn_c.bind("<Leave>", lambda e: btn_c.config(bg=C["bg_content"]))
 
         combo_sala.focus_set()
+
+    # ════════════════════════════════════════════════════════
+    #  MODAL — CONFIRMACIÓN DE RESERVA EXITOSA
+    # ════════════════════════════════════════════════════════
+    def _mostrar_confirmacion_reserva(self, sala, fecha, inicio, fin, resp, desc):
+        """Ventana de confirmación elegante tras registrar una reserva."""
+        conf = tk.Toplevel(self)
+        conf.title("Reserva Confirmada")
+        conf.geometry("480x520")
+        conf.resizable(False, False)
+        conf.configure(bg=C["bg_card"])
+        conf.grab_set()
+        conf.transient(self)
+
+        # Centrar
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width()  - 480) // 2
+        y = self.winfo_y() + (self.winfo_height() - 520) // 2
+        conf.geometry(f"+{x}+{y}")
+
+        # ── Banda superior verde ───────────────────────────
+        banda = tk.Frame(conf, bg=C["green"], pady=28)
+        banda.pack(fill="x")
+
+        tk.Label(
+            banda, text="✓",
+            font=("Segoe UI", 38, "bold"),
+            bg=C["green"], fg="white"
+        ).pack()
+        tk.Label(
+            banda, text="¡Reserva Confirmada!",
+            font=("Segoe UI", 14, "bold"),
+            bg=C["green"], fg="white"
+        ).pack(pady=(4, 0))
+        tk.Label(
+            banda, text="Tu espacio ha sido reservado con éxito",
+            font=("Segoe UI", 9),
+            bg=C["green"], fg="#bbf7d0"
+        ).pack()
+
+        # ── Tarjeta de detalles ───────────────────────────
+        card = tk.Frame(conf, bg=C["bg_card"])
+        card.pack(fill="both", expand=True, padx=28, pady=20)
+
+        def fila(icono, etiqueta, valor, alt=False):
+            bg = C["bg_table_alt"] if alt else C["bg_card"]
+            f = tk.Frame(card, bg=bg)
+            f.pack(fill="x", pady=1)
+            tk.Label(f, text=icono, font=("Segoe UI", 13),
+                     bg=bg, fg=C["primary"], width=3).pack(side="left", padx=(10, 4), pady=8)
+            tk.Label(f, text=etiqueta + ":",
+                     font=("Segoe UI", 9, "bold"),
+                     bg=bg, fg=C["text_2"], width=12, anchor="w").pack(side="left")
+            tk.Label(f, text=valor,
+                     font=("Segoe UI", 9),
+                     bg=bg, fg=C["text_1"], anchor="w").pack(side="left", padx=(4, 10))
+
+        # Formatear fecha legible
+        try:
+            from datetime import datetime
+            fecha_dt  = datetime.strptime(fecha, "%Y-%m-%d")
+            DIAS  = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+            MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+            fecha_fmt = (f"{DIAS[fecha_dt.weekday()]}, "
+                         f"{fecha_dt.day} de {MESES[fecha_dt.month]} {fecha_dt.year}")
+        except Exception:
+            fecha_fmt = fecha
+
+        fila("🏫", "Sala",        f"{sala['nombre']}  [{sala['codigo']}]", alt=False)
+        fila("📅", "Fecha",       fecha_fmt,                               alt=True)
+        fila("🕐", "Horario",     f"{inicio}  →  {fin}",                  alt=False)
+        fila("👤", "Responsable", resp,                                    alt=True)
+
+        if desc:
+            fila("📝", "Propósito",
+                 desc[:52] + ("…" if len(desc) > 52 else ""),             alt=False)
+
+        # Separador
+        tk.Frame(card, bg=C["border"], height=1).pack(fill="x", pady=(14, 0))
+
+        # Nota informativa
+        tk.Label(
+            card,
+            text="La reserva quedó registrada en el sistema.\n"
+                 "Puedes consultarla en la sección de Reservas.",
+            font=("Segoe UI", 8),
+            bg=C["bg_card"], fg=C["text_3"],
+            justify="center"
+        ).pack(pady=(8, 0))
+
+        # ── Botón de cierre ───────────────────────────────
+        pie = tk.Frame(conf, bg=C["bg_content"], pady=14, padx=24)
+        pie.pack(fill="x", side="bottom")
+
+        btn_ok = tk.Label(
+            pie, text="   ✓  Entendido   ",
+            font=("Segoe UI", 10, "bold"),
+            bg=C["green"], fg="white",
+            cursor="hand2", pady=9, padx=6
+        )
+        btn_ok.pack(side="right")
+        btn_ok.bind("<Button-1>", lambda e: conf.destroy())
+        btn_ok.bind("<Enter>",    lambda e: btn_ok.config(bg="#15803d"))
+        btn_ok.bind("<Leave>",    lambda e: btn_ok.config(bg=C["green"]))
+        conf.bind("<Return>",     lambda e: conf.destroy())
+        conf.bind("<Escape>",     lambda e: conf.destroy())
+
+        # Auto-cerrar a los 8 s si el usuario no interactúa
+        conf.after(8000, lambda: conf.destroy() if conf.winfo_exists() else None)
 
     # ════════════════════════════════════════════════════════
     #  MODAL — CREAR NUEVA SALA
