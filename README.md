@@ -109,3 +109,9 @@ El propósito del proyecto es realizar un producto mínimo viable (MVP) al final
 ```
 https://drive.google.com/file/d/1Tm9nGmQKcUG9CYGtcG1RmHNbpRwxnv5C/view?usp=sharing
 ```
+## 📺 Link de la presentación
+
+```
+https://www.canva.com/design/DAHEaNilJy0/4OYhkomI-Cwg47wRApcSDA/edit?utm_content=DAHEaNilJy0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+```
+
