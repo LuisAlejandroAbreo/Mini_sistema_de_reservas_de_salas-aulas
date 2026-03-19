@@ -104,7 +104,7 @@ El propósito del proyecto es realizar un producto mínimo viable (MVP) al final
 - ❌ Cancelar reservas existentes  
 - ✏️ Modificar reservas antes de que ocurran  
 
-## Link del video
+## 📺 Link del video
 
 ```
 https://drive.google.com/file/d/1Tm9nGmQKcUG9CYGtcG1RmHNbpRwxnv5C/view?usp=sharing
