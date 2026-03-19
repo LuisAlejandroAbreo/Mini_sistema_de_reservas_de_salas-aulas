@@ -20,7 +20,7 @@ El propósito principal del programa es permitir **la gestión básica de reserv
 - Debe ingresar el siguiente comando en la terminal para acceder al repositorio
 
 ```bash
-git clone https://github.com/LuisAlejandroAbreo/
+git clone https://github.com/LuisAlejandroAbreo/Mini_sistema_de_reservas_de_salas-aulas.git
 ```
 
 ### ▶️ Ejecución del programa
