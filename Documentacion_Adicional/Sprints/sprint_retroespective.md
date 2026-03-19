@@ -14,7 +14,7 @@
 Analizamos el desempeño del equipo durante el último Sprint para identificar qué procesos, herramientas o interacciones deben mantenerse, eliminarse o evolucionar, respecto al sistema de reservas de salas que hemos implementado.
 
 ## 2. 📊 **Resumen de Ejecución**
-* **Historias de Usuario:** [HU-01, HU-02, HU-03]
+* **Historias de Usuario:** [HU-01, HU-02, HU-03, HU-04]
 * **Cumplimiento de historias:** Completadas
 * **Incidencias Humanas:** El Developtment Team sufrio un cambio de personal a mitad del proceso, debido a la ausencia de uno de los developers
 * **Incidencias Técnicas:** El sistema no pudo compilarse en Linux debido a incongruencia de versiones
